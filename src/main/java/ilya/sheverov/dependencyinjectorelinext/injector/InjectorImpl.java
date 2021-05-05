@@ -5,16 +5,40 @@ import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
 import ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant.ConstructorDeterminantForInjection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class InjectorImpl implements Injector {
-    ConstructorDeterminantForInjection constructorDeterminantForInjection = new ConstructorDeterminantForInjection();
+    ConstructorDeterminantForInjection cDFI = new ConstructorDeterminantForInjection();
 
-    Set<Class<?>> beansContext = new HashSet<>();
+    Map<Class<?>, BeanDefinition> beansDefinitionContext = new HashMap<>();
 
     @Override
     public <T> Provider<T> getProvider(Class<T> type) {
+        if (type.isInterface()) {
+            BeanDefinition beanDefinition = beansDefinitionContext.get(type);
+            if (beanDefinition != null) {
+                if (beanDefinition.constructorArgCount == 0) {
+                    try {
+                        Object bean = beanDefinition.getConstructor().newInstance();
+                        Provider<T> provider = new Provider<>() {
+                            @Override
+                            public T getInstance() {
+                                return (T) bean;
+                            }
+                        };
+                        return provider;
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
         return null;
     }
 
@@ -59,8 +83,12 @@ public class InjectorImpl implements Injector {
     public <T> void bind(Class<T> intf, Class<? extends T> impl) {
         if (intf.isInterface()) {
             if (checkRule(impl)) {
-                if (!beansContext.contains(intf)) {
-                    beansContext.add(intf);
+                if (beansDefinitionContext.get(intf) == null) {
+                    Constructor<?> constructor = cDFI.determine(impl);
+                    BeanDefinition beanDefinition = new BeanDefinition();
+                    beanDefinition.setTypeForCreatingBean(impl);
+                    beanDefinition.setConstructor(constructor);
+                    beansDefinitionContext.put(intf, beanDefinition);
                 } else {
                     throw new RuntimeException("Нельзя использовать больше одной реализации " + intf.getClasses());
                 }
@@ -69,16 +97,56 @@ public class InjectorImpl implements Injector {
 
     }
 
+    @Override
+    public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
+
+    }
+
     class BeanDefinition {
+        Constructor constructor;
         Class<?> typeForCreatingBean;
         int constructorArgCount;
         List<Class<?>> typesConstArgs = new ArrayList<>();
         boolean isSingleton;
 
-    }
+        public Constructor getConstructor() {
+            return constructor;
+        }
 
-    @Override
-    public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
+        public void setConstructor(Constructor constructor) {
+            this.constructor = constructor;
+        }
 
+        public Class<?> getTypeForCreatingBean() {
+            return typeForCreatingBean;
+        }
+
+        public void setTypeForCreatingBean(Class<?> typeForCreatingBean) {
+            this.typeForCreatingBean = typeForCreatingBean;
+        }
+
+        public int getConstructorArgCount() {
+            return constructorArgCount;
+        }
+
+        public void setConstructorArgCount(int constructorArgCount) {
+            this.constructorArgCount = constructorArgCount;
+        }
+
+        public List<Class<?>> getTypesConstArgs() {
+            return typesConstArgs;
+        }
+
+        public void setTypesConstArgs(List<Class<?>> typesConstArgs) {
+            this.typesConstArgs = typesConstArgs;
+        }
+
+        public boolean isSingleton() {
+            return isSingleton;
+        }
+
+        public void setSingleton(boolean singleton) {
+            isSingleton = singleton;
+        }
     }
 }
