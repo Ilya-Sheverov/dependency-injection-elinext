@@ -1,6 +1,9 @@
 package ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
+import ilya.sheverov.dependencyinjectorelinext.exception.ConstructorNotFoundException;
+import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
+import ilya.sheverov.dependencyinjectorelinext.exception.TooManyConstructorsException;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
@@ -9,67 +12,102 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConstructorDeterminantForInjectionTest {
 
-    ConstructorDeterminantForInjection constructorDeterminantForInjection = new ConstructorDeterminantForInjection();
+    private ConstructorDeterminantForInjection constructorDeterminantForInjection =
+        new ConstructorDeterminantForInjection();
 
     @Test
-    void determineDefaultConstructor() {
-        Constructor<?> constructor = constructorDeterminantForInjection.determine(DefaultConstructorClass.class);
+    void testDetermineDefaultConstructor() {
+        Constructor<?> constructor = constructorDeterminantForInjection.determine(DefaultConstructor.class);
 
         assertNotNull(constructor);
     }
 
     @Test
-    void determineInjectAnnotatedConstructor() {
-        Constructor<?> constructor = constructorDeterminantForInjection.determine(InjectAnnotatedConstructorClass.class);
+    void testDetermineAnnotatedConstructor() {
+        Constructor<?> constructor = constructorDeterminantForInjection.determine(InjectAnnotatedConstructor.class);
 
         assertNotNull(constructor);
     }
 
     @Test
-    void tooManyInjectAnnotations() {
-        assertThrows(RuntimeException.class, () -> constructorDeterminantForInjection.determine(TooManyInjectAnnotationsClass.class));
+    void testTooManyConstructors() {
+        assertThrows(TooManyConstructorsException.class,
+            () -> constructorDeterminantForInjection.determine(TooManyInjectAnnotations.class));
     }
 
     @Test
-    void constructorNotFoundException() {
-        assertThrows(RuntimeException.class, () -> constructorDeterminantForInjection.determine(WithoutPublicConstructorsClass.class));
+    void testConstructorNotFound() {
+        assertThrows(ConstructorNotFoundException.class, () -> constructorDeterminantForInjection.determine(WithoutPublicConstructors.class));
+    }
+
+    @Test
+    void testPrimitiveTypeConstructorParameter() {
+        assertThrows(InvalidConstructorParameterTypeException.class,
+            () -> constructorDeterminantForInjection.determine(PrimitiveTypeConstructorParameter.class));
+    }
+
+    @Test
+    void testConstructorParameterNotInterface() {
+        assertThrows(InvalidConstructorParameterTypeException.class,
+            () -> constructorDeterminantForInjection.determine(ConstructorParameterNotInterface.class));
+    }
+}
+
+class DefaultConstructor {
+
+    public DefaultConstructor() {
+
+    }
+}
+
+class InjectAnnotatedConstructor {
+
+    @Inject
+    public InjectAnnotatedConstructor() {
+
+    }
+}
+
+class TooManyInjectAnnotations {
+
+    @Inject
+    public TooManyInjectAnnotations() {
+    }
+
+    @Inject
+    public TooManyInjectAnnotations(Integer a) {
     }
 
 }
 
-class DefaultConstructorClass {
+class WithoutPublicConstructors {
 
-    public DefaultConstructorClass() {
+    WithoutPublicConstructors() {
+    }
 
+    @Inject
+    WithoutPublicConstructors(Integer integer) {
     }
 }
 
-class InjectAnnotatedConstructorClass {
+class PrimitiveTypeConstructorParameter {
+
+    private final Comparable s;
+    private final int a;
 
     @Inject
-    public InjectAnnotatedConstructorClass() {
-
+    public PrimitiveTypeConstructorParameter(Comparable s, int a) {
+        this.s = s;
+        this.a = a;
     }
 }
 
-class TooManyInjectAnnotationsClass {
+class ConstructorParameterNotInterface {
+
+    private Integer integer;
 
     @Inject
-    public TooManyInjectAnnotationsClass() {
-    }
-
-    @Inject
-    public TooManyInjectAnnotationsClass(Integer a) {
-    }
-
-}
-
-class WithoutPublicConstructorsClass {
-
-    WithoutPublicConstructorsClass() {
-    }
-
-    @Inject
-    WithoutPublicConstructorsClass(Integer integer) {
+    public ConstructorParameterNotInterface(Integer integer) {
+        this.integer = integer;
     }
 }

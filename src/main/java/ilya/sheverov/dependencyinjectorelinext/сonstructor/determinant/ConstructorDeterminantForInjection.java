@@ -1,9 +1,11 @@
 package ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
+import ilya.sheverov.dependencyinjectorelinext.exception.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 
 public class ConstructorDeterminantForInjection {
     public Constructor<?> determine(Class<?> aClass) {
@@ -11,7 +13,7 @@ public class ConstructorDeterminantForInjection {
             if (!Modifier.isAbstract(aClass.getModifiers())) {
                 Constructor<?>[] constructors = aClass.getConstructors();
                 if (constructors.length < 1) {
-                    throw new RuntimeException("Не найдено ниодного конструктора");
+                    throw new ConstructorNotFoundException("No constructor found.");
                 }
                 int constructorWithInjectAnnotationCount = 0;
                 Constructor<?> defaultConstructor = null;
@@ -27,21 +29,23 @@ public class ConstructorDeterminantForInjection {
                         }
                     }
                     if (constructorWithInjectAnnotationCount > 1) {
-                        throw new RuntimeException("Не может быть два конструтора с аннотацией @Inject ");
+                        throw new TooManyConstructorsException("There can't be two constructors with the @Inject annotation.");
                     }
                 }
                 if (withInjectAnnotationConstructor != null) {
+                    validateConstructorParameters(withInjectAnnotationConstructor);
                     return withInjectAnnotationConstructor;
                 } else if (defaultConstructor != null) {
+                    validateConstructorParameters(defaultConstructor);
                     return defaultConstructor;
                 } else {
-                    throw new RuntimeException("Не найдено ниодного подхожящего конструктор");
+                    throw new ConstructorNotFoundException("No matching constructor found.");
                 }
             } else {
-                throw new RuntimeException("Нельзя передавать абстрактные классы.");
+                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
             }
         } else {
-            throw new RuntimeException("Нельзя передавать интерфейсы классы.");
+            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
         }
     }
 
@@ -50,5 +54,15 @@ public class ConstructorDeterminantForInjection {
             return true;
         }
         return false;
+    }
+
+    private void validateConstructorParameters(Constructor<?> constructor) {
+        Parameter[] parameters = constructor.getParameters();
+        for (Parameter parameter : parameters) {
+            Class<?> type = parameter.getType();
+            if (!type.isInterface() || type.isPrimitive()) {
+                throw new InvalidConstructorParameterTypeException("The type of the constructor parameter must be an interface.");
+            }
+        }
     }
 }
