@@ -8,9 +8,6 @@ import java.lang.reflect.Parameter;
 
 public class BeanDefinitionFactoryImpl implements BeanDefinitionFactory {
 
-    public BeanDefinitionFactoryImpl() {
-    }
-
     ConstructorDeterminantForInjection constructorDeterminantForInjection =
         new ConstructorDeterminantForInjection();
 

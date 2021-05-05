@@ -1,9 +1,6 @@
 package ilya.sheverov.dependencyinjectorelinext.injector;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BeanDefinition {
 

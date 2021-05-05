@@ -1,7 +1,11 @@
 package ilya.sheverov.dependencyinjectorelinext.injector;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
+import ilya.sheverov.dependencyinjectorelinext.exception.BindingNotFoundException;
+import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
+import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationHandler;
@@ -10,73 +14,180 @@ import java.lang.reflect.Proxy;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-interface DefaultConstructorInterface {
-}
+interface BeanOne {
 
-interface EventDAO {
-}
+    BeanTwo getBeanTwo();
 
-interface EventService {
+    BeanThree getBeanThree();
 
 }
 
-class DefaultConstructorClass implements DefaultConstructorInterface {
+interface BeanTwo {
 
-    public DefaultConstructorClass() {
+    BeanThree getBeanThree();
 
-    }
 }
 
-class InMemoryEventDAOImpl implements EventDAO {
-    public InMemoryEventDAOImpl() {
-        System.out.println("InMemoryEventDAOImpl");
-    }
+interface BeanThree {
 }
 
-class EventServiceImpl implements EventService {
+interface CyclicBeanOne {
+}
 
-    private EventDAO eventDAO;
-
-    public EventServiceImpl() {
-    }
-
-    @Inject
-    public EventServiceImpl(EventDAO eventDAO) {
-        System.out.println("EventServiceImpl");
-        this.eventDAO = eventDAO;
-    }
+interface CyclicBeanTwo {
 }
 
 class InjectorImplTest {
 
     @Test
-    void getProvider() {
+    void testBinding() {
         Injector injector = new InjectorImpl();
-        injector.bind(DefaultConstructorInterface.class, DefaultConstructorClass.class);
+        injector.bind(BeanOne.class, BeanOneImpl.class);
+        injector.bind(BeanTwo.class, BeanTwoImpl.class);
+        injector.bindSingleton(BeanThree.class, BeanThreeImpl.class);
 
+        Provider<BeanOne> beanOneImplProvider = injector.getProvider(BeanOne.class);
+
+        assertNotNull(beanOneImplProvider);
+
+        BeanOne beanOneImpl = beanOneImplProvider.getInstance();
+        assertNotNull(beanOneImpl);
+        assertEquals(beanOneImpl.getBeanThree(), beanOneImpl.getBeanTwo().getBeanThree());
 
     }
 
     @Test
-    void testEventServiceImplBinding() {
+    void testSingletonsOnly() {
         Injector injector = new InjectorImpl();
-        injector.bind(EventDAO.class, InMemoryEventDAOImpl.class);
-        injector.bind(EventService.class, EventServiceImpl.class);
+        injector.bindSingleton(BeanOne.class, BeanOneImpl.class);
+        injector.bindSingleton(BeanTwo.class, BeanTwoImpl.class);
+        injector.bindSingleton(BeanThree.class, BeanThreeImpl.class);
 
-        Provider<EventService> provider = injector.getProvider(EventService.class);
+        Provider<BeanOne> beanOneImplProvider = injector.getProvider(BeanOne.class);
 
-        assertNotNull(provider);
-        assertNotNull(provider.getInstance());
-        assertSame(EventServiceImpl.class, provider.getInstance().getClass());
+        assertNotNull(beanOneImplProvider);
 
+        BeanOne beanOneImpl = beanOneImplProvider.getInstance();
+        assertNotNull(beanOneImpl);
+        assertEquals(beanOneImpl.getBeanThree(), beanOneImpl.getBeanTwo().getBeanThree());
     }
 
     @Test
-    void bind() {
+    void testBindingNotFound() {
+        Injector injector = new InjectorImpl();
+
+        Provider<BeanOne> beanOneProvider = injector.getProvider(BeanOne.class);
+
+        assertNull(beanOneProvider);
     }
 
     @Test
-    void bindSingleton() {
+    void testBindingForConstructorArgumentNotFound() {
+        Injector injector = new InjectorImpl();
+        injector.bind(BeanTwo.class, BeanTwoImpl.class);
+
+        assertThrows(BindingNotFoundException.class,
+            () -> injector.getProvider(BeanTwo.class).getInstance());
+    }
+
+    @Test
+    void testFirstParameterIsNotAnInterfaceForBinding() {
+        Injector injector = new InjectorImpl();
+
+        assertThrows(IllegalArgumentForBindingException.class,
+            () -> injector.bindSingleton(BeanOneImpl.class, BeanOneImpl.class));
+    }
+
+    @Test
+    void testSecondParameterCannotBeAbstractClassForBinding() {
+        Injector injector = new InjectorImpl();
+
+        assertThrows(IllegalArgumentForBindingException.class,
+            () -> injector.bindSingleton(BeanOne.class, BeanOneAbstract.class));
+    }
+
+    @Disabled
+    @Test
+    void testCyclicBeans() {
+        Injector injector = new InjectorImpl();
+        injector.bindSingleton(CyclicBeanOne.class, CyclicBeanOneImpl.class);
+        injector.bindSingleton(CyclicBeanTwo.class, CyclicBeanTwoImpl.class);
+
+        Provider<CyclicBeanOne> cyclicBeanOneProvider = injector.getProvider(CyclicBeanOne.class);
+        cyclicBeanOneProvider.getInstance();// java.lang.StackOverflowError
     }
 }
+
+class BeanOneImpl implements BeanOne {
+
+    private final BeanTwo beanTwo;
+    private final BeanThree beanThree;
+
+    @Inject
+    public BeanOneImpl(BeanTwo beanTwo, BeanThree beanThree) {
+        this.beanTwo = beanTwo;
+        this.beanThree = beanThree;
+    }
+
+    public BeanTwo getBeanTwo() {
+        return beanTwo;
+    }
+
+    public BeanThree getBeanThree() {
+        return beanThree;
+    }
+}
+
+abstract class BeanOneAbstract implements BeanOne {
+
+    private final BeanTwo beanTwo;
+    private final BeanThree beanThree;
+
+    @Inject
+    public BeanOneAbstract(BeanTwo beanTwo, BeanThree beanThree) {
+        this.beanTwo = beanTwo;
+        this.beanThree = beanThree;
+    }
+}
+
+class BeanTwoImpl implements BeanTwo {
+
+    private BeanThree beanThree;
+
+    @Inject
+    public BeanTwoImpl(BeanThree beanThree) {
+        this.beanThree = beanThree;
+    }
+
+    public BeanThree getBeanThree() {
+        return beanThree;
+    }
+}
+
+class BeanThreeImpl implements BeanThree {
+    public BeanThreeImpl() {
+    }
+}
+
+class CyclicBeanOneImpl implements CyclicBeanOne {
+
+    private CyclicBeanTwo cyclicBeanTwo;
+
+    @Inject
+    public CyclicBeanOneImpl(CyclicBeanTwo cyclicBeanTwo) {
+        this.cyclicBeanTwo = cyclicBeanTwo;
+    }
+}
+
+class CyclicBeanTwoImpl implements CyclicBeanTwo {
+
+    private CyclicBeanOne cyclicBeanOne;
+
+    @Inject
+    public CyclicBeanTwoImpl(CyclicBeanOne cyclicBeanOne) {
+        this.cyclicBeanOne = cyclicBeanOne;
+    }
+
+}
+
 
