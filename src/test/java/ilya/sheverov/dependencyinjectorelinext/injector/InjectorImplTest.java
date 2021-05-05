@@ -29,6 +29,7 @@ class DefaultConstructorClass implements DefaultConstructorInterface {
 
 class InMemoryEventDAOImpl implements EventDAO {
     public InMemoryEventDAOImpl() {
+        System.out.println("InMemoryEventDAOImpl");
     }
 }
 
@@ -37,11 +38,11 @@ class EventServiceImpl implements EventService {
     private EventDAO eventDAO;
 
     public EventServiceImpl() {
-
     }
 
     @Inject
     public EventServiceImpl(EventDAO eventDAO) {
+        System.out.println("EventServiceImpl");
         this.eventDAO = eventDAO;
     }
 }
