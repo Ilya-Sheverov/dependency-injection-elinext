@@ -54,14 +54,17 @@
 
 [to the table of contents](README.md#table-of-contents)
 
-В проекте используется  [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html), за исключением пункта [4.2 Block indentation](https://google.github.io/styleguide/javaguide.html#s4.2-block-indentation). Использует **block indentation**= +4 пробела, вместо 2.
+В проекте используется  [Google Java Style Guide](https://google.github.io/styleguide/javaguide
+.html), за исключением пункта [4.2 Block indentation](https://google.github.io/styleguide/javaguide.html#s4.2-block-indentation). Использую **block indentation**= +4 пробела, вместо 2.
 
 ## Assumptions
 
 В данной версии моего контейнера были приняты следующие допущения:
 
-1. Проводится проверка на циклические зависимости между бинами (одному объекту надо передать в конструктор второй объект, а второму требуется передать в конструктор первый) только при вызове метода  `checkBindings()`  у объекта класса  **InjectorImpl.class**. Если не вызвать этот метод и при байдинге будут обнаружены циклические зависимости, будет ошибка StackOverflowError. 
-2. Считается, что все типы параметров конструкторов бинов являются интерфейсами, если нет, то выбрасывается исключение.
+1. Проводится проверка на циклические зависимости между бинами (одному объекту надо передать в конструктор второй объект,
+а второму требуется передать в конструктор первый) только при вызове метода  `checkBindings()`  у объекта класса  **InjectorImpl.class**.
+Если не вызвать этот метод и при байдинге будут обнаружены циклические зависимости, будет выбрашена ошибка StackOverflowError. 
+2. Считается, что все типы параметров конструкторов бинов являются интерфейсами, если нет, то выбрасывается исключение InvalidConstructorParameterTypeException.
 
 ## TODO
 
