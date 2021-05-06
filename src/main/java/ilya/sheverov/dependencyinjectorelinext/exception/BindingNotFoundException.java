@@ -1,5 +1,9 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Требовалось реализовать в тестовом задании. Ошибка говрит о том, что тип, объект которого требуется передать в
+ * конструтор ненайден.
+ */
 public class BindingNotFoundException extends RuntimeException {
 
     public BindingNotFoundException() {

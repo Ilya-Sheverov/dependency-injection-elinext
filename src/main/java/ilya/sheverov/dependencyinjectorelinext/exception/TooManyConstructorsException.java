@@ -1,5 +1,9 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Требовалось реализовать в тестовом задании. Ошибка возникает тогда, когда найдено больше одного подходящего
+ * конструтора.
+ */
 public class TooManyConstructorsException extends RuntimeException {
 
     public TooManyConstructorsException() {

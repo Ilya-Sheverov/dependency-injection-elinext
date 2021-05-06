@@ -1,14 +1,11 @@
-package ilya.sheverov.dependencyinjectorelinext.injector;
+package ilya.sheverov.dependencyinjectorelinext.bean;
 
-import ilya.sheverov.dependencyinjectorelinext.exception.BindingNotFoundException;
-import ilya.sheverov.dependencyinjectorelinext.exception.FailedToCreateBeanException;
-import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
-import ilya.sheverov.dependencyinjectorelinext.exception.MoreThanOneImplementationException;
+import ilya.sheverov.dependencyinjectorelinext.exception.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -21,34 +18,40 @@ public class BindingBeansContext {
 
     private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
 
-    Lock lock = new ReentrantLock();
+    private Lock lock = new ReentrantLock();
 
-    private <T> T getPrototypeBean(BeanDefinition beanDefinition) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Object getPrototypeBean(BeanDefinition beanDefinition) throws NoSuchMethodException, IllegalAccessException,
+        InvocationTargetException, InstantiationException {
         Class<?> typeOfBean = beanDefinition.getTypeOfBean();
         int constructorParametersCount = beanDefinition.getConstructorParametersCount();
         Object[] constructorArgsValues = new Object[constructorParametersCount];
         Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
         if (constructorParametersCount == 0) {
-            return (T) typeOfBean.getConstructor(constructorParametersTypes).newInstance(constructorArgsValues);
+            Constructor<?> constructor = typeOfBean.getConstructor(constructorParametersTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(constructorArgsValues);
         } else {
             int constructorArgNumber = 0;
             for (Class<?> constructorParameterType : constructorParametersTypes) {
                 constructorArgsValues[constructorArgNumber] = getBean(constructorParameterType);
                 constructorArgNumber++;
             }
-            return (T) typeOfBean.getConstructor(constructorParametersTypes).newInstance(constructorArgsValues);
+            Constructor<?> constructor = typeOfBean.getConstructor(constructorParametersTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(constructorArgsValues);
         }
     }
 
-    private <T> T getSingletonBean(BeanDefinition beanDefinition, Class<?> intf) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private Object getSingletonBean(BeanDefinition beanDefinition, Class<?> intf) throws InvocationTargetException,
+        NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (singletonContainer.containsKey(intf)) {
-            return (T) singletonContainer.get(intf);
+            return singletonContainer.get(intf);
         } else {
             lock.lock();
             try {
                 Object bean = getPrototypeBean(beanDefinition);
                 singletonContainer.put(intf, bean);
-                return (T) bean;
+                return bean;
             } finally {
                 lock.unlock();
             }
@@ -61,13 +64,13 @@ public class BindingBeansContext {
                 BeanDefinition beanDefinition = beansDefinitionStorage.get(type);
                 if (beanDefinition.isSingleton()) {
                     try {
-                        return getSingletonBean(beanDefinition, type);
+                        return (T) getSingletonBean(beanDefinition, type);
                     } catch (Exception e) {
                         throw new FailedToCreateBeanException(e);
                     }
                 } else {
                     try {
-                        return getPrototypeBean(beanDefinition);
+                        return (T) getPrototypeBean(beanDefinition);
                     } catch (BindingNotFoundException e) {
                         throw e;
                     } catch (Exception e) {
@@ -100,5 +103,42 @@ public class BindingBeansContext {
 
     public boolean hasBinding(Class<?> type) {
         return beansDefinitionStorage.containsKey(type);
+    }
+
+    public void checkBindings() {
+        checkThatAllBindingsExist();
+        checkThatThereAreNoCyclicDependencies();
+    }
+
+    private void checkThatAllBindingsExist() {
+        Collection<BeanDefinition> beanDefinitions = beansDefinitionStorage.values();
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            if (beanDefinition.getConstructorParametersCount() != 0) {
+                Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
+                for (Class<?> constructorParameterType : constructorParametersTypes) {
+                    if (!beansDefinitionStorage.containsKey(constructorParameterType)) {
+                        throw new BindingNotFoundException("No building found for the type " + constructorParameterType);
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkThatThereAreNoCyclicDependencies() {
+        beansDefinitionStorage.forEach((type, beanDefinition) -> {
+            findCyclicDependencies(type, beanDefinition);
+        });
+    }
+
+    private void findCyclicDependencies(Class<?> type, BeanDefinition beanDefinition) {
+        Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
+        for (Class<?> constructorParameterType : constructorParametersTypes) {
+            if (constructorParameterType.equals(type)) {
+                throw new CyclicDependencyException();
+            } else {
+                BeanDefinition nextBeanDefinition = beansDefinitionStorage.get(constructorParameterType);
+                findCyclicDependencies(type, nextBeanDefinition);
+            }
+        }
     }
 }

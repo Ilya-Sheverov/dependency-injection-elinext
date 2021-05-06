@@ -7,6 +7,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
+/**
+ * Класс содержит метод который позволяется определить конструтор, через который в дальнейшем будет создавать объект.
+ * Также проверяет конструтор на соответсвие определенным правилам.
+ */
 public class ConstructorDeterminantForInjection {
     public Constructor<?> determine(Class<?> aClass) {
         if (!aClass.isInterface()) {

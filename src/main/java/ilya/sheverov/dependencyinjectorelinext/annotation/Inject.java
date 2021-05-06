@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Аннотация, поставленная над конструтором класса говорит о том, что аргумены конструктора должны быть проинжектированы.
- *
+ * Требовалось реализовать в тестовом задании. Аннотация, поставленная над конструтором класса говорит о том, что
+ * аргумены конструктора должны быть инжектированы.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.CONSTRUCTOR)

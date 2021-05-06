@@ -1,11 +1,15 @@
-package ilya.sheverov.dependencyinjectorelinext.injector;
+package ilya.sheverov.dependencyinjectorelinext.bean;
 
+import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
 import ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant.ConstructorDeterminantForInjection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
+/**
+ * Позволяет получать {@link BeanDefinition} на основе переданного в метод getBeanDefinition() типа.
+ */
 public class BeanDefinitionFactoryImpl implements BeanDefinitionFactory {
 
     ConstructorDeterminantForInjection constructorDeterminantForInjection =
@@ -24,12 +28,11 @@ public class BeanDefinitionFactoryImpl implements BeanDefinitionFactory {
                 beanDefinition.setConstructorParametersTypes(parametersTypes);
                 return beanDefinition;
             } else {
-                throw new RuntimeException("Нельзя передавать абстрактные классы.");
+                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
             }
         } else {
-            throw new RuntimeException("Нельзя передавать интерфейсы классы.");
+            throw new IllegalArgumentForBindingException("You can't pass interfaces.");
         }
-
     }
 
     private Class<?>[] getConstructorParametersTypes(Constructor<?> constructor) {

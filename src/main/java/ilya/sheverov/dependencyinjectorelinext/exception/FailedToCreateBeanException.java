@@ -1,5 +1,8 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Ошибка говорит о том, что в ходе выполнения програмы произошла ошбка и не удалось создать bean.
+ */
 public class FailedToCreateBeanException extends RuntimeException {
 
     public FailedToCreateBeanException() {

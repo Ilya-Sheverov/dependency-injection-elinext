@@ -1,7 +1,10 @@
-package ilya.sheverov.dependencyinjectorelinext.injector;
+package ilya.sheverov.dependencyinjectorelinext.bean;
 
 import java.lang.reflect.Constructor;
 
+/**
+ * Объект этого класса хранит в себе всю необходимую информацию для последующего создания бина.
+ */
 public class BeanDefinition {
 
     private boolean isSingleton;

@@ -1,5 +1,8 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Ошибка говорит о том, что ужу одна имплементация интерфейса при байдинге была добавлена.
+ */
 public class MoreThanOneImplementationException extends RuntimeException {
 
     public MoreThanOneImplementationException() {

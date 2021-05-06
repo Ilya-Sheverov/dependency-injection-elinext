@@ -1,5 +1,8 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Ошибка говрит о том, что тип параметра кострутора не соответсвует требованиям.
+ */
 public class InvalidConstructorParameterTypeException extends RuntimeException {
 
     public InvalidConstructorParameterTypeException() {

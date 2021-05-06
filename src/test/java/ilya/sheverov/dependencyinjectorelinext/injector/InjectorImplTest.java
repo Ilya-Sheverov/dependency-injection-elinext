@@ -2,6 +2,7 @@ package ilya.sheverov.dependencyinjectorelinext.injector;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
 import ilya.sheverov.dependencyinjectorelinext.exception.BindingNotFoundException;
+import ilya.sheverov.dependencyinjectorelinext.exception.CyclicDependencyException;
 import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
 import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
@@ -13,29 +14,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-interface BeanOne {
-
-    BeanTwo getBeanTwo();
-
-    BeanThree getBeanThree();
-
-}
-
-interface BeanTwo {
-
-    BeanThree getBeanThree();
-
-}
-
-interface BeanThree {
-}
-
-interface CyclicBeanOne {
-}
-
-interface CyclicBeanTwo {
-}
 
 class InjectorImplTest {
 
@@ -53,7 +31,6 @@ class InjectorImplTest {
         BeanOne beanOneImpl = beanOneImplProvider.getInstance();
         assertNotNull(beanOneImpl);
         assertEquals(beanOneImpl.getBeanThree(), beanOneImpl.getBeanTwo().getBeanThree());
-
     }
 
     @Test
@@ -106,16 +83,48 @@ class InjectorImplTest {
             () -> injector.bindSingleton(BeanOne.class, BeanOneAbstract.class));
     }
 
-    @Disabled
     @Test
     void testCyclicBeans() {
-        Injector injector = new InjectorImpl();
+        InjectorImpl injector = new InjectorImpl();
         injector.bindSingleton(CyclicBeanOne.class, CyclicBeanOneImpl.class);
         injector.bindSingleton(CyclicBeanTwo.class, CyclicBeanTwoImpl.class);
 
-        Provider<CyclicBeanOne> cyclicBeanOneProvider = injector.getProvider(CyclicBeanOne.class);
-        cyclicBeanOneProvider.getInstance();// java.lang.StackOverflowError
+        assertThrows(CyclicDependencyException.class,
+            injector::checkBindings);
+
     }
+
+    @Test
+    void testCheckThatAllBindingsExist() {
+        InjectorImpl injector = new InjectorImpl();
+        injector.bind(BeanTwo.class, BeanTwoImpl.class);
+
+        assertThrows(BindingNotFoundException.class,
+            injector::checkBindings);
+    }
+}
+
+interface BeanOne {
+
+    BeanTwo getBeanTwo();
+
+    BeanThree getBeanThree();
+
+}
+
+interface BeanTwo {
+
+    BeanThree getBeanThree();
+
+}
+
+interface BeanThree {
+}
+
+interface CyclicBeanOne {
+}
+
+interface CyclicBeanTwo {
 }
 
 class BeanOneImpl implements BeanOne {

@@ -1,5 +1,9 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Требовалось реализовать в тестовом задании. Ошибка говрит о том, что конструктор, необходимый для создания объекта
+ * через интерфейс {@link ilya.sheverov.dependencyinjectorelinext.injector.Injector} не найден.
+ */
 public class ConstructorNotFoundException extends RuntimeException {
 
     public ConstructorNotFoundException() {

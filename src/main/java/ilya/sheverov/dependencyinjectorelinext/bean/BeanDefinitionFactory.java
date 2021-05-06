@@ -1,4 +1,4 @@
-package ilya.sheverov.dependencyinjectorelinext.injector;
+package ilya.sheverov.dependencyinjectorelinext.bean;
 
 public interface BeanDefinitionFactory {
 

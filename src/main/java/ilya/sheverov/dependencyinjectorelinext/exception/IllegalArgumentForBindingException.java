@@ -1,5 +1,9 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
+/**
+ * Ошибка говорит о том, что в метод класса {@link ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl}
+ * передан не допустимый аргумент.
+ */
 public class IllegalArgumentForBindingException extends RuntimeException {
 
     public IllegalArgumentForBindingException() {

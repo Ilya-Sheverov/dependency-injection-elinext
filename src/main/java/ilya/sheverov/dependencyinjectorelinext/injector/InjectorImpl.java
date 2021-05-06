@@ -1,10 +1,14 @@
 package ilya.sheverov.dependencyinjectorelinext.injector;
 
+import ilya.sheverov.dependencyinjectorelinext.bean.BindingBeansContext;
 import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
 
 import java.lang.reflect.Modifier;
 
+/**
+ * Реализация интерфейса {@link Injector}, которая требовалась в тестовом задании.
+ */
 public class InjectorImpl implements Injector {
 
     BindingBeansContext bindingBeansContext = new BindingBeansContext();
@@ -45,5 +49,9 @@ public class InjectorImpl implements Injector {
         } else {
             throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
         }
+    }
+
+    public void checkBindings() {
+        bindingBeansContext.checkBindings();
     }
 }
