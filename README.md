@@ -54,8 +54,9 @@
 
 [to the table of contents](README.md#table-of-contents)
 
-В проекте используется  [Google Java Style Guide](https://google.github.io/styleguide/javaguide
-.html), за исключением пункта [4.2 Block indentation](https://google.github.io/styleguide/javaguide.html#s4.2-block-indentation). Использую **block indentation**= +4 пробела, вместо 2.
+В проекте используется  [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html),
+за исключением пункта [4.2 Block indentation](https://google.github.io/styleguide/javaguide.html#s4.2-block-indentation).
+Использую **block indentation**= +4 пробела, вместо 2.
 
 ## Assumptions
 
