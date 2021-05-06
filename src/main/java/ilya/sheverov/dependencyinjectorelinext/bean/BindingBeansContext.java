@@ -49,9 +49,12 @@ public class BindingBeansContext {
         } else {
             lock.lock();
             try {
-                Object bean = getPrototypeBean(beanDefinition);
-                singletonContainer.put(intf, bean);
-                return bean;
+                if (singletonContainer.containsKey(intf)) {
+                    Object bean = getPrototypeBean(beanDefinition);
+                    singletonContainer.putIfAbsent(intf, bean);
+                    return bean;
+                }
+                return singletonContainer.get(intf);
             } finally {
                 lock.unlock();
             }
