@@ -50,11 +50,11 @@ public class BindingBeansContext {
             lock.lock();
             try {
                 if (singletonContainer.containsKey(intf)) {
-                    Object bean = getPrototypeBean(beanDefinition);
-                    singletonContainer.putIfAbsent(intf, bean);
-                    return bean;
+                    return singletonContainer.get(intf);
                 }
-                return singletonContainer.get(intf);
+                Object bean = getPrototypeBean(beanDefinition);
+                singletonContainer.putIfAbsent(intf, bean);
+                return bean;
             } finally {
                 lock.unlock();
             }
