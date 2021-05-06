@@ -51,15 +51,15 @@ public class SomeModelImpl implements SomeModel {
 Предположим *SomeServiceImpl* и *SomeDAOImpl* должны быть в единственном экземпляре, а *SomeModelImpl* каждый раз создаваться новый.  Тогда реализация этого будет выглядеть так:
 
 ```java
- 		InjectorImpl injector = new InjectorImpl();
-        injector.bind(SomeModel.class,SomeModelImpl.class);
-        injector.bindSingleton(SomeService.class,SomeServiceImpl.class);
-        injector.bindSingleton(SomeDAO.class,SomeDAOImpl.class);
-		injector.checkBindings();
+InjectorImpl injector = new InjectorImpl();
+injector.bind(SomeModel.class,SomeModelImpl.class);
+injector.bindSingleton(SomeService.class,SomeServiceImpl.class);
+injector.bindSingleton(SomeDAO.class,SomeDAOImpl.class);
+injector.checkBindings();
 
-        Provider<SomeModel> someModelProvider = injector.getProvider(SomeModel.class);
+Provider<SomeModel> someModelProvider = injector.getProvider(SomeModel.class);
 
-        SomeModel someModel = someModelProvider.getInstance();
+SomeModel someModel = someModelProvider.getInstance();
 ```
 
 1. Сначала мы регистрируем наши бины как **prototype** используя метод `bind()` или как **singleton** используя метод `bindSingleton()`.
