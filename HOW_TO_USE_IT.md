@@ -46,24 +46,31 @@ public class SomeModelImpl implements SomeModel {
 }
 ```
 
-Для осуществления байндинга в конструктор класса имплементации добавляется аннотация @Inject.
+Для осуществления байндинга в конструктор класса имплементации добавляется аннотация @Inject. При отсутствии конструкторов с аннотацией Inject используется конструктор по умолчанию. 
 
-Предположим *SomeServiceImpl* и *SomeDAOImpl* должны быть в единственном экземпляре, а *SomeModelImpl* каждый раз создаваться новый.  Тогда реализация этого будет выглядеть так:
+Предположим, *SomeServiceImpl* и *SomeDAOImpl* должны быть в единственном экземпляре, а *SomeModelImpl* каждый раз создаваться новый.
+Реализация такого поведения будет выглядеть так:
 
 ```java
-InjectorImpl injector = new InjectorImpl();
-injector.bind(SomeModel.class,SomeModelImpl.class);
-injector.bindSingleton(SomeService.class,SomeServiceImpl.class);
-injector.bindSingleton(SomeDAO.class,SomeDAOImpl.class);
-injector.checkBindings();
+public class Main {
+    public static void main(String[] args) {
+        InjectorImpl injector = new InjectorImpl();
+        injector.bind(SomeModel.class,SomeModelImpl.class);
+        injector.bindSingleton(SomeService.class,SomeServiceImpl.class);
+        injector.bindSingleton(SomeDAO.class,SomeDAOImpl.class);
+        injector.checkBindings();
+        
+        Provider<SomeModel> someModelProvider = injector.getProvider(SomeModel.class);
 
-Provider<SomeModel> someModelProvider = injector.getProvider(SomeModel.class);
-
-SomeModel someModel = someModelProvider.getInstance();
+        SomeModel someModel = someModelProvider.getInstance();
+    }
+}
 ```
 
 1. Сначала мы регистрируем наши бины как **prototype** используя метод `bind()` или как **singleton** используя метод `bindSingleton()`.
-2. Используйте метод `checkBindings()` , что бы гарантировать, что все биндинги добавлены и среди них нет циркулярных зависимостей.
-3. Затем получаем  Provider, по интерфейсу.
-4. Вызывая метод провайдера `getInstance()` мы будем получать каждый раз новый объект класса *SomeModelImpl.class,* но содержащий в себе одни и те же объекты классов *SomeServiceImpl.class*, *SomeDAOImpl.class*.
+2. Используем метод `checkBindings()`, что бы гарантировать, что все необходимые биндинги добавлены и среди них нет циркулярных зависимостей.
+3. Затем получаем Provider, передавая в качестве параметра методу `getProvider()` интерфейс.
+4. Вызывая метод провайдера `getInstance()` мы получаем каждый раз новый объект
+класса *SomeModelImpl.class* (так как он был зарегистрирован как prototype),
+но содержащий в себе одни и те же объекты классов *SomeServiceImpl.class*, *SomeDAOImpl.class*(так как они были зарегистрированы как singleton).
 
