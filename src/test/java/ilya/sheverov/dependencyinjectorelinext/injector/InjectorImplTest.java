@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -101,6 +103,42 @@ class InjectorImplTest {
 
         assertThrows(BindingNotFoundException.class,
             injector::checkBindings);
+    }
+
+
+    /**
+     * В тесте проверяется, что объект, который должен создаться один раз, не создаться больше более одного.
+     * Для этого, каждый поток сохраняет в синхронизированный {@code Set<Object> objects} полученный инстанс. Если
+     * дупликата не произошло, то размер objects будет равен 1.
+     */
+    @Test
+    void testConcurrent() throws InterruptedException {
+        Injector injector = new InjectorImpl();
+        injector.bindSingleton(BeanOne.class, BeanOneImpl.class);
+        injector.bindSingleton(BeanTwo.class, BeanTwoImpl.class);
+        injector.bind(BeanThree.class, BeanThreeImpl.class);
+
+        Provider<BeanOne> beanOneImplProvider = injector.getProvider(BeanOne.class);
+        CountDownLatch count = new CountDownLatch(2021);
+        Set<Object> objects = Collections.synchronizedSet(new HashSet<>());
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        for (int i = 0; i < 2021; i++) {
+            executorService.execute(() -> {
+                try {
+                    Thread.yield();
+                    TimeUnit.MILLISECONDS.sleep(300);
+                    Thread.yield();
+                    BeanOne beanOne = beanOneImplProvider.getInstance();
+                    objects.add(beanOne);
+                    count.countDown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+        count.await();
+
+        assertEquals(1, objects.size());
     }
 }
 
