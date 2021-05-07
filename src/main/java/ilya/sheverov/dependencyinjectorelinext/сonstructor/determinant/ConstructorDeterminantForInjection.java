@@ -8,8 +8,19 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
 /**
- * Класс содержит метод который позволяется определить конструтор, через который в дальнейшем будет создавать объект.
- * Также проверяет конструтор на соответсвие определенным правилам.
+ * Класс содержит метод, который позволяется определить конструктор, через который в дальнейшем будет создаваться
+ * объект.
+ * <p>
+ * Проверяет, что аннотация {@link Inject} присутствует в единственном экземпляре или отсутствует вовсе. Тогда будет
+ * выбран конструктор по умолчанию. Если будет обнаружено больше одной аннотации {@link Inject}, то будет выброшено
+ * исключение {@link TooManyConstructorsException}. Если не будет найдено ни одного подходящего конструктора, то будет
+ * выброшено исключение {@link ConstructorNotFoundException}.
+ * <p>
+ * Также проверяются параметры конструктора. Параметры конструктор не должны быть примитивного типа. Если пареметры
+ * конструктора не соответствуют требования, то будет выброшено исключение
+ * {@link InvalidConstructorParameterTypeException}.
+ *
+ * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class, boolean)
  */
 public class ConstructorDeterminantForInjection {
     public Constructor<?> determine(Class<?> aClass) {
@@ -54,10 +65,7 @@ public class ConstructorDeterminantForInjection {
     }
 
     private boolean isDefaultConstructor(Constructor<?> constructor) {
-        if (constructor.getParameterCount() == 0) {
-            return true;
-        }
-        return false;
+        return constructor.getParameterCount() == 0;
     }
 
     private void validateConstructorParameters(Constructor<?> constructor) {

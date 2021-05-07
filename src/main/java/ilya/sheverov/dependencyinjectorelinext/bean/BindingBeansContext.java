@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Основной класс для настройки всего Dependency Injection-контейнера.
  * <p>
  * BindingBeansContext содержит фабрику для создания объектов BeanDefinition {@link BeanDefinitionFactory}.
- * Хранит все BeanDefinition в {@code beansDefinitionStorage}.*
+ * Хранит все BeanDefinition в {@code beansDefinitionStorage}.
  * Хранит синглтон бины в {@code singletonContainer}.
  * Содержит методы для привязки и создания бинов.
  *
