@@ -10,6 +10,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Основной класс для настройки всего Dependency Injection-контейнера.
+ * <p>
+ * BindingBeansContext содержит фабрику для создания объектов BeanDefinition {@link BeanDefinitionFactory}.
+ * Хранит все BeanDefinition в {@code beansDefinitionStorage}.*
+ * Хранит синглтон бины в {@code singletonContainer}.
+ * Содержит методы для привязки и создания бинов.
+ *
+ * @see BindingBeansContext#bind(Class, Class, boolean)
+ * @see BindingBeansContext#getBean(Class)
+ */
 public class BindingBeansContext {
 
     private final BeanDefinitionFactory beanDefinitionFactory = new BeanDefinitionFactoryImpl();
@@ -94,7 +105,7 @@ public class BindingBeansContext {
                     BeanDefinition beanDefinition = beanDefinitionFactory.getBeanDefinition(impl, isSingleton);
                     beansDefinitionStorage.put(intf, beanDefinition);
                 } else {
-                    throw new MoreThanOneImplementationException("More than one implementation detected " + intf.getClasses());
+                    throw new MoreThanOneImplementationException("More than one implementation detected " + intf);
                 }
             } else {
                 throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
@@ -128,9 +139,7 @@ public class BindingBeansContext {
     }
 
     private void checkThatThereAreNoCyclicDependencies() {
-        beansDefinitionStorage.forEach((type, beanDefinition) -> {
-            findCyclicDependencies(type, beanDefinition);
-        });
+        beansDefinitionStorage.forEach(this::findCyclicDependencies);
     }
 
     private void findCyclicDependencies(Class<?> type, BeanDefinition beanDefinition) {
