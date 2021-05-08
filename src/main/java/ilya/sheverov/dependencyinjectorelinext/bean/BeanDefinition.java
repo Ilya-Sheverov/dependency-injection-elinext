@@ -10,7 +10,7 @@ import java.lang.reflect.Constructor;
  * Объекты этого классы используются {@link BindingBeansContext} для создания бина.
  *
  * @see BindingBeansContext#getBean(Class)
- * @see BeanDefinitionFactoryImpl
+ * @see BeanDefinitionFactory
  */
 public class BeanDefinition {
 

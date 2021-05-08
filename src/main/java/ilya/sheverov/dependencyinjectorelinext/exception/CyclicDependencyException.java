@@ -1,8 +1,6 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 
-import ilya.sheverov.dependencyinjectorelinext.bean.BindingBeansContext;
-
 /**
  * Ошибка может появится при вызове метода checkBindings() класса
  * {@link BindingBeansContext}. Она говрит о том, что среди
