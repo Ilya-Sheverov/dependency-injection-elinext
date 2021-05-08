@@ -50,6 +50,19 @@
 
      `mvn package`
 
+  Или сразу сохраните библиотеку в ваш локальный maven-репозиторий.
+
+   `mvn install`
+
+   И добавьте зависимость в ваш pom.xml.
+   ```xml
+   <dependency>
+       <groupId>com.github.sheverov.ilya</groupId>
+       <artifactId>dependency-injector-elinext</artifactId>
+       <version>1.3</version>
+   </dependency>
+   ```
+
 ## Style Guide
 
 [to the table of contents](README.md#table-of-contents)
