@@ -1,7 +1,7 @@
 package ilya.sheverov.dependencyinjectorelinext.bean;
 
 import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
-import ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant.ConstructorDeterminantForInjection;
+import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -20,8 +20,8 @@ import java.lang.reflect.Parameter;
  */
 public class BeanDefinitionFactory {
 
-    ConstructorDeterminantForInjection constructorDeterminantForInjection =
-        new ConstructorDeterminantForInjection();
+    ConstructorDeterminant constructorDeterminant =
+        new ConstructorDeterminant();
 
     /**
      * Возвращает {@link BeanDefinition} на основе переданной в метод информации.
@@ -36,7 +36,7 @@ public class BeanDefinitionFactory {
                 BeanDefinition beanDefinition = new BeanDefinition();
                 beanDefinition.setTypeOfBean(aClass);
                 beanDefinition.setSingleton(isSingleton);
-                Constructor<?> constructor = constructorDeterminantForInjection.determine(aClass);
+                Constructor<?> constructor = constructorDeterminant.determine(aClass);
                 beanDefinition.setConstructor(constructor);
                 Class<?>[] parametersTypes = getConstructorParametersTypes(constructor);
                 beanDefinition.setConstructorParametersTypes(parametersTypes);

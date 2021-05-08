@@ -37,44 +37,6 @@ public class InjectorImpl implements Injector {
     private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
     private Lock lock = new ReentrantLock();
 
-    @Override
-    public <T> Provider<T> getProvider(Class<T> type) {
-        if (type.isInterface()) {
-            if (hasBinding(type)) {
-                return () -> getBean(type);
-            }
-            return null;
-        } else {
-            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
-        }
-    }
-
-    @Override
-    public <T> void bind(Class<T> intf, Class<? extends T> impl) {
-        if (intf.isInterface()) {
-            if (!Modifier.isAbstract(impl.getModifiers())) {
-                bind(intf, impl, false);
-            } else {
-                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
-            }
-        } else {
-            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
-        }
-    }
-
-    @Override
-    public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
-        if (intf.isInterface()) {
-            if (!Modifier.isAbstract(impl.getModifiers())) {
-                bind(intf, impl, true);
-            } else {
-                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
-            }
-        } else {
-            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
-        }
-    }
-
     private Object getPrototypeBean(BeanDefinition beanDefinition) throws NoSuchMethodException, IllegalAccessException,
         InvocationTargetException, InstantiationException {
         Class<?> typeOfBean = beanDefinition.getTypeOfBean();
@@ -139,6 +101,18 @@ public class InjectorImpl implements Injector {
         }
     }
 
+    @Override
+    public <T> Provider<T> getProvider(Class<T> type) {
+        if (type.isInterface()) {
+            if (hasBinding(type)) {
+                return () -> getBean(type);
+            }
+            return null;
+        } else {
+            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
+        }
+    }
+
     public <T> void bind(Class<T> intf, Class<? extends T> impl, boolean isSingleton) {
         if (intf.isInterface()) {
             if (!Modifier.isAbstract(impl.getModifiers())) {
@@ -148,6 +122,32 @@ public class InjectorImpl implements Injector {
                 } else {
                     throw new MoreThanOneImplementationException("More than one implementation detected " + intf);
                 }
+            } else {
+                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
+            }
+        } else {
+            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
+        }
+    }
+
+    @Override
+    public <T> void bind(Class<T> intf, Class<? extends T> impl) {
+        if (intf.isInterface()) {
+            if (!Modifier.isAbstract(impl.getModifiers())) {
+                bind(intf, impl, false);
+            } else {
+                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
+            }
+        } else {
+            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
+        }
+    }
+
+    @Override
+    public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
+        if (intf.isInterface()) {
+            if (!Modifier.isAbstract(impl.getModifiers())) {
+                bind(intf, impl, true);
             } else {
                 throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
             }

@@ -1,5 +1,7 @@
 package ilya.sheverov.dependencyinjectorelinext.bean;
 
+import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
+
 import java.lang.reflect.Constructor;
 
 /**
@@ -32,9 +34,9 @@ public class BeanDefinition {
      * Указывает на то, через какой конструктор создавать бин.
      * <p>
      * Конструктор определяется при помощи
-     * {@link ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant.ConstructorDeterminantForInjection }
+     * {@link ConstructorDeterminant }
      *
-     * @see ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant.ConstructorDeterminantForInjection#determine(Class)
+     * @see ConstructorDeterminant#determine(Class)
      */
     private Constructor constructor;
 

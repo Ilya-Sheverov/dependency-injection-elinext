@@ -1,4 +1,4 @@
-package ilya.sheverov.dependencyinjectorelinext.сonstructor.determinant;
+package ilya.sheverov.dependencyinjectorelinext.bean.constructor;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
 import ilya.sheverov.dependencyinjectorelinext.exception.*;
@@ -22,7 +22,7 @@ import java.lang.reflect.Parameter;
  *
  * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class, boolean)
  */
-public class ConstructorDeterminantForInjection {
+public class ConstructorDeterminant {
     public Constructor<?> determine(Class<?> aClass) {
         if (!aClass.isInterface()) {
             if (!Modifier.isAbstract(aClass.getModifiers())) {
