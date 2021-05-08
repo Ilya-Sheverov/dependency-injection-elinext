@@ -20,7 +20,9 @@ import java.lang.reflect.Parameter;
  * конструктора не соответствуют требования, то будет выброшено исключение
  * {@link InvalidConstructorParameterTypeException}.
  *
+ * @author Ilya Sheverov
  * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class, boolean)
+ * @since 1.0
  */
 public class ConstructorDeterminant {
 
@@ -94,7 +96,7 @@ public class ConstructorDeterminant {
         Parameter[] parameters = constructor.getParameters();
         for (Parameter parameter : parameters) {
             Class<?> type = parameter.getType();
-            if (!type.isInterface() || type.isPrimitive()) {
+            if (type.isPrimitive()) {
                 throw new InvalidConstructorParameterTypeException("The type of the constructor parameter must be an interface.");
             }
         }

@@ -34,6 +34,7 @@ public class InjectorImpl implements Injector {
 
     private final BeanDefinitionFactory beanDefinitionFactory = new BeanDefinitionFactory();
     private final Map<Class<?>, BeanDefinition> beansDefinitionStorage = new HashMap<>();
+    private final Map<Class<?>, Class<?>> interfaceByAClass = new HashMap<>();
     private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
     private Lock lock = new ReentrantLock();
 
@@ -78,8 +79,8 @@ public class InjectorImpl implements Injector {
     }
 
     private Object getBean(Class<?> type) {
-        if (beansDefinitionStorage.containsKey(type)) {
-            BeanDefinition beanDefinition = beansDefinitionStorage.get(type);
+        if (hasBinding(type)) {
+            BeanDefinition beanDefinition = getBeanDefinitionByType(type);
             if (beanDefinition.isSingleton()) {
                 try {
                     return getSingletonBean(beanDefinition, type);
@@ -118,6 +119,7 @@ public class InjectorImpl implements Injector {
                 if (!beansDefinitionStorage.containsKey(intf)) {
                     BeanDefinition beanDefinition = beanDefinitionFactory.getBeanDefinition(impl, isSingleton);
                     beansDefinitionStorage.put(intf, beanDefinition);
+                    interfaceByAClass.put(impl, intf);
                 } else {
                     throw new MoreThanOneImplementationException("More than one implementation detected " + intf);
                 }
@@ -131,32 +133,28 @@ public class InjectorImpl implements Injector {
 
     @Override
     public <T> void bind(Class<T> intf, Class<? extends T> impl) {
-        if (intf.isInterface()) {
-            if (!Modifier.isAbstract(impl.getModifiers())) {
-                bind(intf, impl, false);
-            } else {
-                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
-            }
-        } else {
-            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
-        }
+        bind(intf, impl, false);
     }
 
     @Override
     public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
-        if (intf.isInterface()) {
-            if (!Modifier.isAbstract(impl.getModifiers())) {
-                bind(intf, impl, true);
-            } else {
-                throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
-            }
-        } else {
-            throw new IllegalArgumentForBindingException("You can't pass non-interfaces.");
-        }
+        bind(intf, impl, true);
     }
 
     public boolean hasBinding(Class<?> type) {
-        return beansDefinitionStorage.containsKey(type);
+        if (type.isInterface()) {
+            return beansDefinitionStorage.containsKey(type);
+        } else {
+            return interfaceByAClass.containsKey(type);
+        }
+    }
+
+    public BeanDefinition getBeanDefinitionByType(Class<?> type) {
+        if (type.isInterface()) {
+            return beansDefinitionStorage.get(type);
+        } else {
+            return beansDefinitionStorage.get(interfaceByAClass.get(type));
+        }
     }
 
     public void checkBindings() {

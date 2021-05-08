@@ -17,6 +17,140 @@ import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+interface BeanOne {
+
+    BeanTwo getBeanTwo();
+
+    BeanThree getBeanThree();
+
+}
+
+interface BeanTwo {
+
+    BeanThree getBeanThree();
+
+}
+
+interface BeanThree {
+}
+
+interface BeanFour {
+
+    BeanOneImpl getBeanOne();
+
+    BeanTwoImpl getBeanTwo();
+
+    BeanThreeImpl getBeanThree();
+
+}
+
+interface CyclicBeanOne {
+}
+
+interface CyclicBeanTwo {
+}
+
+class BeanOneImpl implements BeanOne {
+
+    private final BeanTwo beanTwo;
+    private final BeanThree beanThree;
+
+    @Inject
+    public BeanOneImpl(BeanTwo beanTwo, BeanThree beanThree) {
+        this.beanTwo = beanTwo;
+        this.beanThree = beanThree;
+    }
+
+    public BeanTwo getBeanTwo() {
+        return beanTwo;
+    }
+
+    public BeanThree getBeanThree() {
+        return beanThree;
+    }
+}
+
+abstract class BeanOneAbstract implements BeanOne {
+
+    private final BeanTwo beanTwo;
+    private final BeanThree beanThree;
+
+    @Inject
+    public BeanOneAbstract(BeanTwo beanTwo, BeanThree beanThree) {
+        this.beanTwo = beanTwo;
+        this.beanThree = beanThree;
+    }
+}
+
+class BeanTwoImpl implements BeanTwo {
+
+    private BeanThree beanThree;
+
+    @Inject
+    public BeanTwoImpl(BeanThree beanThree) {
+        this.beanThree = beanThree;
+    }
+
+    public BeanThree getBeanThree() {
+        return beanThree;
+    }
+}
+
+class BeanThreeImpl implements BeanThree {
+    public BeanThreeImpl() {
+    }
+}
+
+class BeanFourImpl implements BeanFour {
+
+    private final BeanOneImpl beanOne;
+    private final BeanTwoImpl beanTwo;
+    private final BeanThreeImpl beanThree;
+
+    @Inject
+    public BeanFourImpl(BeanOneImpl beanOne, BeanTwoImpl beanTwo, BeanThreeImpl beanThree) {
+        this.beanOne = beanOne;
+        this.beanTwo = beanTwo;
+        this.beanThree = beanThree;
+    }
+
+    @Override
+    public BeanOneImpl getBeanOne() {
+        return beanOne;
+    }
+
+    @Override
+    public BeanTwoImpl getBeanTwo() {
+        return beanTwo;
+    }
+
+    @Override
+    public BeanThreeImpl getBeanThree() {
+        return beanThree;
+    }
+}
+
+class CyclicBeanOneImpl implements CyclicBeanOne {
+
+    private CyclicBeanTwo cyclicBeanTwo;
+
+    @Inject
+    public CyclicBeanOneImpl(CyclicBeanTwo cyclicBeanTwo) {
+        this.cyclicBeanTwo = cyclicBeanTwo;
+    }
+}
+
+class CyclicBeanTwoImpl implements CyclicBeanTwo {
+
+    private CyclicBeanOne cyclicBeanOne;
+
+    @Inject
+    public CyclicBeanTwoImpl(CyclicBeanOne cyclicBeanOne) {
+        this.cyclicBeanOne = cyclicBeanOne;
+    }
+
+}
+
 class InjectorImplTest {
 
     @Test
@@ -49,6 +183,23 @@ class InjectorImplTest {
         BeanOne beanOneImpl = beanOneImplProvider.getInstance();
         assertNotNull(beanOneImpl);
         assertEquals(beanOneImpl.getBeanThree(), beanOneImpl.getBeanTwo().getBeanThree());
+    }
+
+    @Test
+    void testConstructorParametersAreNotInterfaces() {
+        Injector injector = new InjectorImpl();
+        injector.bindSingleton(BeanOne.class, BeanOneImpl.class);
+        injector.bindSingleton(BeanTwo.class, BeanTwoImpl.class);
+        injector.bind(BeanThree.class, BeanThreeImpl.class);
+        injector.bind(BeanFour.class, BeanFourImpl.class);
+
+        Provider<BeanFour> beanFourProvider = injector.getProvider(BeanFour.class);
+
+        BeanFour beanFour = beanFourProvider.getInstance();
+        assertNotNull(beanFour);
+        assertNotNull(beanFour.getBeanOne());
+        assertNotNull(beanFour.getBeanTwo());
+        assertNotNull(beanFour.getBeanThree());
     }
 
     @Test
@@ -140,101 +291,6 @@ class InjectorImplTest {
 
         assertEquals(1, objects.size());
     }
-}
-
-interface BeanOne {
-
-    BeanTwo getBeanTwo();
-
-    BeanThree getBeanThree();
-
-}
-
-interface BeanTwo {
-
-    BeanThree getBeanThree();
-
-}
-
-interface BeanThree {
-}
-
-interface CyclicBeanOne {
-}
-
-interface CyclicBeanTwo {
-}
-
-class BeanOneImpl implements BeanOne {
-
-    private final BeanTwo beanTwo;
-    private final BeanThree beanThree;
-
-    @Inject
-    public BeanOneImpl(BeanTwo beanTwo, BeanThree beanThree) {
-        this.beanTwo = beanTwo;
-        this.beanThree = beanThree;
-    }
-
-    public BeanTwo getBeanTwo() {
-        return beanTwo;
-    }
-
-    public BeanThree getBeanThree() {
-        return beanThree;
-    }
-}
-
-abstract class BeanOneAbstract implements BeanOne {
-
-    private final BeanTwo beanTwo;
-    private final BeanThree beanThree;
-
-    @Inject
-    public BeanOneAbstract(BeanTwo beanTwo, BeanThree beanThree) {
-        this.beanTwo = beanTwo;
-        this.beanThree = beanThree;
-    }
-}
-
-class BeanTwoImpl implements BeanTwo {
-
-    private BeanThree beanThree;
-
-    @Inject
-    public BeanTwoImpl(BeanThree beanThree) {
-        this.beanThree = beanThree;
-    }
-
-    public BeanThree getBeanThree() {
-        return beanThree;
-    }
-}
-
-class BeanThreeImpl implements BeanThree {
-    public BeanThreeImpl() {
-    }
-}
-
-class CyclicBeanOneImpl implements CyclicBeanOne {
-
-    private CyclicBeanTwo cyclicBeanTwo;
-
-    @Inject
-    public CyclicBeanOneImpl(CyclicBeanTwo cyclicBeanTwo) {
-        this.cyclicBeanTwo = cyclicBeanTwo;
-    }
-}
-
-class CyclicBeanTwoImpl implements CyclicBeanTwo {
-
-    private CyclicBeanOne cyclicBeanOne;
-
-    @Inject
-    public CyclicBeanTwoImpl(CyclicBeanOne cyclicBeanOne) {
-        this.cyclicBeanOne = cyclicBeanOne;
-    }
-
 }
 
 
