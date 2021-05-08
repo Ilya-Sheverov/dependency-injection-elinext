@@ -37,14 +37,13 @@ public class InjectorImpl implements Injector {
     private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
     private Lock lock = new ReentrantLock();
 
-    private Object getPrototypeBean(BeanDefinition beanDefinition) throws NoSuchMethodException, IllegalAccessException,
+    private Object getPrototypeBean(BeanDefinition beanDefinition) throws IllegalAccessException,
         InvocationTargetException, InstantiationException {
-        Class<?> typeOfBean = beanDefinition.getTypeOfBean();
         int constructorParametersCount = beanDefinition.getConstructorParametersCount();
         Object[] constructorArgsValues = new Object[constructorParametersCount];
         Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
         if (constructorParametersCount == 0) {
-            Constructor<?> constructor = typeOfBean.getConstructor(constructorParametersTypes);
+            Constructor<?> constructor = beanDefinition.getConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance(constructorArgsValues);
         } else {
@@ -53,14 +52,14 @@ public class InjectorImpl implements Injector {
                 constructorArgsValues[constructorArgNumber] = getBean(constructorParameterType);
                 constructorArgNumber++;
             }
-            Constructor<?> constructor = typeOfBean.getConstructor(constructorParametersTypes);
+            Constructor<?> constructor = beanDefinition.getConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance(constructorArgsValues);
         }
     }
 
     private Object getSingletonBean(BeanDefinition beanDefinition, Class<?> intf) throws InvocationTargetException,
-        NoSuchMethodException, InstantiationException, IllegalAccessException {
+        InstantiationException, IllegalAccessException {
         if (singletonContainer.containsKey(intf)) {
             return singletonContainer.get(intf);
         } else {
@@ -78,18 +77,18 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    private <T> T getBean(Class<T> type) {
+    private Object getBean(Class<?> type) {
         if (beansDefinitionStorage.containsKey(type)) {
             BeanDefinition beanDefinition = beansDefinitionStorage.get(type);
             if (beanDefinition.isSingleton()) {
                 try {
-                    return (T) getSingletonBean(beanDefinition, type);
+                    return getSingletonBean(beanDefinition, type);
                 } catch (Exception e) {
                     throw new FailedToCreateBeanException(e);
                 }
             } else {
                 try {
-                    return (T) getPrototypeBean(beanDefinition);
+                    return getPrototypeBean(beanDefinition);
                 } catch (BindingNotFoundException e) {
                     throw e;
                 } catch (Exception e) {
@@ -105,7 +104,7 @@ public class InjectorImpl implements Injector {
     public <T> Provider<T> getProvider(Class<T> type) {
         if (type.isInterface()) {
             if (hasBinding(type)) {
-                return () -> getBean(type);
+                return () -> (T) getBean(type);
             }
             return null;
         } else {
