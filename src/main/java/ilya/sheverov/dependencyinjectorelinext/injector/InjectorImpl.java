@@ -8,12 +8,11 @@ import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 
 /**
  * Реализация интерфейса {@link Injector}, которая требовалась в тестовом задании.
@@ -36,6 +35,7 @@ public class InjectorImpl implements Injector {
     private final Map<Class<?>, BeanDefinition> beansDefinitionStorage = new HashMap<>();
     private final Map<Class<?>, Class<?>> interfaceByAClass = new HashMap<>();
     private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
+    private volatile boolean isBeenValidated;
     private Lock lock = new ReentrantLock();
 
     private Object getPrototypeBean(BeanDefinition beanDefinition) throws IllegalAccessException,
@@ -105,6 +105,9 @@ public class InjectorImpl implements Injector {
     public <T> Provider<T> getProvider(Class<T> type) {
         if (type.isInterface()) {
             if (hasBinding(type)) {
+                if (!isBeenValidated) {
+                    checkTypeOnCyclicDependencies(type);
+                }
                 return () -> (T) getBean(type);
             }
             return null;
@@ -113,13 +116,16 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    public <T> void bind(Class<T> intf, Class<? extends T> impl, boolean isSingleton) {
+    synchronized public <T> void bind(Class<T> intf, Class<? extends T> impl, boolean isSingleton) {
         if (intf.isInterface()) {
             if (!Modifier.isAbstract(impl.getModifiers())) {
                 if (!beansDefinitionStorage.containsKey(intf)) {
                     BeanDefinition beanDefinition = beanDefinitionFactory.getBeanDefinition(impl, isSingleton);
                     beansDefinitionStorage.put(intf, beanDefinition);
                     interfaceByAClass.put(impl, intf);
+                    if (isBeenValidated) {
+                        isBeenValidated = false;
+                    }
                 } else {
                     throw new MoreThanOneImplementationException("More than one implementation detected " + intf);
                 }
@@ -141,7 +147,7 @@ public class InjectorImpl implements Injector {
         bind(intf, impl, true);
     }
 
-    public boolean hasBinding(Class<?> type) {
+    synchronized public boolean hasBinding(Class<?> type) {
         if (type.isInterface()) {
             return beansDefinitionStorage.containsKey(type);
         } else {
@@ -157,7 +163,8 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    public void checkBindings() {
+    synchronized public void checkBindings() {
+        isBeenValidated = true;
         checkThatAllBindingsExist();
         checkThatThereAreNoCyclicDependencies();
     }
@@ -176,19 +183,49 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    private void checkThatThereAreNoCyclicDependencies() {
-        beansDefinitionStorage.forEach(this::findCyclicDependencies);
-    }
-
     private void findCyclicDependencies(Class<?> type, BeanDefinition beanDefinition) {
         Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
         for (Class<?> constructorParameterType : constructorParametersTypes) {
             if (constructorParameterType.equals(type)) {
-                throw new CyclicDependencyException();
+                throw new CyclicDependencyException("A cyclic dependence was found for the type:");
             } else {
-                BeanDefinition nextBeanDefinition = beansDefinitionStorage.get(constructorParameterType);
+                BeanDefinition nextBeanDefinition = getBeanDefinitionByType(constructorParameterType);
                 findCyclicDependencies(type, nextBeanDefinition);
             }
         }
+    }
+
+    private void checkThatThereAreNoCyclicDependencies() {
+        beansDefinitionStorage.forEach(this::findCyclicDependencies);
+    }
+
+    private Map<Class<?>, BeanDefinition> getAllTheNecessaryDefinitionsForTheType(Class<?> type,
+                                                                                  Map<Class<?>, BeanDefinition> beanDefinitions) {
+        if (!hasBinding(type)) {
+            throw new BindingNotFoundException("No building found for the type " + type);
+        }
+        if (!type.isInterface()) {
+            type = interfaceByAClass.get(type);
+        }
+        BeanDefinition beanDefinition = getBeanDefinitionByType(type);
+        if (beanDefinitions.containsKey(type)) {
+            return beanDefinitions;
+        }
+        beanDefinitions.put(type, beanDefinition);
+        for (Class<?> constructorParameterType : beanDefinition.getConstructorParametersTypes()) {
+            getAllTheNecessaryDefinitionsForTheType(constructorParameterType, beanDefinitions);
+        }
+        return beanDefinitions;
+    }
+
+    private void checkTypeOnCyclicDependencies(Class<?> type) {
+        Map<Class<?>, BeanDefinition> allTheNecessaryDefinitionsForTheType = getAllTheNecessaryDefinitionsForTheType(type,
+            new HashMap<>());
+        allTheNecessaryDefinitionsForTheType.forEach(new BiConsumer<Class<?>, BeanDefinition>() {
+            @Override
+            public void accept(Class<?> aClass, BeanDefinition beanDefinition) {
+                findCyclicDependencies(aClass, beanDefinition);
+            }
+        });
     }
 }

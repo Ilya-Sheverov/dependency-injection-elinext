@@ -8,6 +8,7 @@ import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParam
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -196,6 +197,7 @@ class InjectorImplTest {
         Provider<BeanFour> beanFourProvider = injector.getProvider(BeanFour.class);
 
         BeanFour beanFour = beanFourProvider.getInstance();
+
         assertNotNull(beanFour);
         assertNotNull(beanFour.getBeanOne());
         assertNotNull(beanFour.getBeanTwo());
@@ -248,7 +250,18 @@ class InjectorImplTest {
     }
 
     @Test
-    void testCheckThatAllBindingsExist() {
+    void testCyclicBeansWithoutCheckingMethod() {
+        InjectorImpl injector = new InjectorImpl();
+        injector.bindSingleton(CyclicBeanOne.class, CyclicBeanOneImpl.class);
+        injector.bindSingleton(CyclicBeanTwo.class, CyclicBeanTwoImpl.class);
+        assertThrows(CyclicDependencyException.class, () -> injector.getProvider(CyclicBeanOne.class)
+        );
+
+
+    }
+
+    @Test
+    void testCheckThatNotAllBindingsExist() {
         InjectorImpl injector = new InjectorImpl();
         injector.bind(BeanTwo.class, BeanTwoImpl.class);
 
@@ -264,7 +277,7 @@ class InjectorImplTest {
      */
     @Test
     void testConcurrent() throws InterruptedException {
-        Injector injector = new InjectorImpl();
+        InjectorImpl injector = new InjectorImpl();
         injector.bindSingleton(BeanOne.class, BeanOneImpl.class);
         injector.bindSingleton(BeanTwo.class, BeanTwoImpl.class);
         injector.bind(BeanThree.class, BeanThreeImpl.class);
