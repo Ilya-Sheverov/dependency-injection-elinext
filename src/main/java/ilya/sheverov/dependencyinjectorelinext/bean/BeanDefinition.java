@@ -36,7 +36,7 @@ public class BeanDefinition {
      * Конструктор определяется при помощи
      * {@link ConstructorDeterminant }
      *
-     * @see ConstructorDeterminant#determine(Class)
+     * @see ConstructorDeterminant#getConstructorForInjection(Class)
      */
     private Constructor constructor;
 

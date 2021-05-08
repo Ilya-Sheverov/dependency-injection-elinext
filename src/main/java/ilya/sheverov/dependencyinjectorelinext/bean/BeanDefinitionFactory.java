@@ -1,11 +1,10 @@
 package ilya.sheverov.dependencyinjectorelinext.bean;
 
-import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
 import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
+import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorInformation;
+import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 
 /**
  * Фабрика предназначена для получения объектов класса {@link BeanDefinition} на основе информации, переданной в метод
@@ -36,10 +35,9 @@ public class BeanDefinitionFactory {
                 BeanDefinition beanDefinition = new BeanDefinition();
                 beanDefinition.setTypeOfBean(aClass);
                 beanDefinition.setSingleton(isSingleton);
-                Constructor<?> constructor = constructorDeterminant.determine(aClass);
-                beanDefinition.setConstructor(constructor);
-                Class<?>[] parametersTypes = getConstructorParametersTypes(constructor);
-                beanDefinition.setConstructorParametersTypes(parametersTypes);
+                ConstructorInformation constructorInformation = constructorDeterminant.getConstructorForInjection(aClass);
+                beanDefinition.setConstructor(constructorInformation.getConstructor());
+                beanDefinition.setConstructorParametersTypes(constructorInformation.getParametersTypes());
                 return beanDefinition;
             } else {
                 throw new IllegalArgumentForBindingException("You can't pass abstract classes.");
@@ -47,16 +45,5 @@ public class BeanDefinitionFactory {
         } else {
             throw new IllegalArgumentForBindingException("You can't pass interfaces.");
         }
-    }
-
-    private Class<?>[] getConstructorParametersTypes(Constructor<?> constructor) {
-        Parameter[] parameters = constructor.getParameters();
-        Class<?>[] parametersTypes = new Class[parameters.length];
-        int parameterNumber = 0;
-        for (Parameter parameter : parameters) {
-            parametersTypes[parameterNumber] = parameter.getType();
-            parameterNumber++;
-        }
-        return parametersTypes;
     }
 }

@@ -8,8 +8,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
 /**
- * Класс содержит метод, который позволяется определить конструктор, через который в дальнейшем будет создаваться
- * объект.
+ * Класс содержит метод, который позволяется определить конструктор, через который DI-контейнером будет создаваться
+ * бин.
  * <p>
  * Проверяет, что аннотация {@link Inject} присутствует в единственном экземпляре или отсутствует вовсе. Тогда будет
  * выбран конструктор по умолчанию. Если будет обнаружено больше одной аннотации {@link Inject}, то будет выброшено
@@ -23,7 +23,8 @@ import java.lang.reflect.Parameter;
  * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class, boolean)
  */
 public class ConstructorDeterminant {
-    public Constructor<?> determine(Class<?> aClass) {
+
+    public ConstructorInformation getConstructorForInjection(Class<?> aClass) {
         if (!aClass.isInterface()) {
             if (!Modifier.isAbstract(aClass.getModifiers())) {
                 Constructor<?>[] constructors = aClass.getConstructors();
@@ -49,10 +50,20 @@ public class ConstructorDeterminant {
                 }
                 if (withInjectAnnotationConstructor != null) {
                     validateConstructorParameters(withInjectAnnotationConstructor);
-                    return withInjectAnnotationConstructor;
+                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(withInjectAnnotationConstructor);
+                    ConstructorInformation constructorInformation = new ConstructorInformation();
+                    constructorInformation
+                        .setConstructor(withInjectAnnotationConstructor)
+                        .setParametersTypes(constructorParametersTypes);
+                    return constructorInformation;
                 } else if (defaultConstructor != null) {
                     validateConstructorParameters(defaultConstructor);
-                    return defaultConstructor;
+                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(defaultConstructor);
+                    ConstructorInformation constructorInformation = new ConstructorInformation();
+                    constructorInformation
+                        .setConstructor(defaultConstructor)
+                        .setParametersTypes(constructorParametersTypes);
+                    return constructorInformation;
                 } else {
                     throw new ConstructorNotFoundException("No matching constructor found.");
                 }
@@ -66,6 +77,17 @@ public class ConstructorDeterminant {
 
     private boolean isDefaultConstructor(Constructor<?> constructor) {
         return constructor.getParameterCount() == 0;
+    }
+
+    private Class<?>[] getConstructorParametersTypes(Constructor<?> constructor) {
+        Parameter[] parameters = constructor.getParameters();
+        Class<?>[] parametersTypes = new Class[parameters.length];
+        int parameterNumber = 0;
+        for (Parameter parameter : parameters) {
+            parametersTypes[parameterNumber] = parameter.getType();
+            parameterNumber++;
+        }
+        return parametersTypes;
     }
 
     private void validateConstructorParameters(Constructor<?> constructor) {
