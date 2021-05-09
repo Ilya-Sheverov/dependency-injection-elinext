@@ -1,8 +1,8 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 /**
- * Требовалось реализовать в тестовом задании. Ошибка говрит о том, что тип, объект которого требуется передать в
- * конструтор ненайден.
+ * Требовалось реализовать в тестовом задании.
+ * Ошибка говорит о том, что тип, объект которого требуется передать в конструктор не найден.
  */
 public class BindingNotFoundException extends RuntimeException {
 
@@ -22,7 +22,8 @@ public class BindingNotFoundException extends RuntimeException {
         super(cause);
     }
 
-    protected BindingNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected BindingNotFoundException(String message, Throwable cause, boolean enableSuppression,
+        boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

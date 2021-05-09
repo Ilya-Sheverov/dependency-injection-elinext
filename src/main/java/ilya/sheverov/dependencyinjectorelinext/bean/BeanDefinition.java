@@ -1,17 +1,17 @@
 package ilya.sheverov.dependencyinjectorelinext.bean;
 
 import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
-
 import java.lang.reflect.Constructor;
 
 /**
  * Объект класса BeanDefinition хранит необходимую информацию для последующего создания бина.
- * Например, нужно ли создавать бин как синглтон, какой его тип, через какой конструктор его создавать и какие у этого
- * конструктора параметры.
+ * Например, нужно ли создавать бин как синглтон, какой его тип, через какой конструктор его
+ * создавать и какие у этого конструктора параметры.
  * <p>
- * Объекты этого классы используются {@link BindingBeansContext} для создания бина.
+ * Объекты этого классы используются {@link ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl}
+ * для создания бина.
  *
- * @see BindingBeansContext#getBean(Class)
+ * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#getProvider(Class)
  * @see BeanDefinitionFactory
  */
 public class BeanDefinition {
@@ -33,8 +33,7 @@ public class BeanDefinition {
     /**
      * Указывает на то, через какой конструктор создавать бин.
      * <p>
-     * Конструктор определяется при помощи
-     * {@link ConstructorDeterminant }
+     * Конструктор определяется при помощи {@link ConstructorDeterminant }
      *
      * @see ConstructorDeterminant#getConstructorForInjection(Class)
      */

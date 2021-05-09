@@ -1,27 +1,31 @@
 package ilya.sheverov.dependencyinjectorelinext.bean.constructor;
 
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
-import ilya.sheverov.dependencyinjectorelinext.exception.*;
-
+import ilya.sheverov.dependencyinjectorelinext.exception.ConstructorNotFoundException;
+import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
+import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
+import ilya.sheverov.dependencyinjectorelinext.exception.TooManyConstructorsException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
 /**
- * Класс содержит метод, который позволяется определить конструктор, через который DI-контейнером будет создаваться
- * бин.
+ * Класс содержит метод, который позволяется определить конструктор, через который DI-контейнером
+ * будет создаваться бин.
  * <p>
- * Проверяет, что аннотация {@link Inject} присутствует в единственном экземпляре или отсутствует вовсе. Тогда будет
- * выбран конструктор по умолчанию. Если будет обнаружено больше одной аннотации {@link Inject}, то будет выброшено
- * исключение {@link TooManyConstructorsException}. Если не будет найдено ни одного подходящего конструктора, то будет
- * выброшено исключение {@link ConstructorNotFoundException}.
+ * Проверяет, что аннотация {@link Inject} присутствует в единственном экземпляре или отсутствует
+ * вовсе. Тогда будет выбран конструктор по умолчанию. Если будет обнаружено больше одной аннотации
+ * {@link Inject}, то будет выброшено исключение {@link TooManyConstructorsException}. Если не будет
+ * найдено ни одного подходящего конструктора, то будет выброшено исключение {@link
+ * ConstructorNotFoundException}.
  * <p>
- * Также проверяются параметры конструктора. Параметры конструктор не должны быть примитивного типа. Если пареметры
- * конструктора не соответствуют требования, то будет выброшено исключение
- * {@link InvalidConstructorParameterTypeException}.
+ * Также проверяются параметры конструктора. Параметры конструктор не должны быть примитивного типа.
+ * Если пареметры конструктора не соответствуют требования, то будет выброшено исключение {@link
+ * InvalidConstructorParameterTypeException}.
  *
  * @author Ilya Sheverov
- * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class, boolean)
+ * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class,
+ * boolean)
  * @since 1.0
  */
 public class ConstructorDeterminant {
@@ -47,12 +51,14 @@ public class ConstructorDeterminant {
                         }
                     }
                     if (constructorWithInjectAnnotationCount > 1) {
-                        throw new TooManyConstructorsException("There can't be two constructors with the @Inject annotation.");
+                        throw new TooManyConstructorsException(
+                            "There can't be two constructors with the @Inject annotation.");
                     }
                 }
                 if (withInjectAnnotationConstructor != null) {
                     validateConstructorParameters(withInjectAnnotationConstructor);
-                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(withInjectAnnotationConstructor);
+                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(
+                        withInjectAnnotationConstructor);
                     ConstructorInformation constructorInformation = new ConstructorInformation();
                     constructorInformation
                         .setConstructor(withInjectAnnotationConstructor)
@@ -60,7 +66,8 @@ public class ConstructorDeterminant {
                     return constructorInformation;
                 } else if (defaultConstructor != null) {
                     validateConstructorParameters(defaultConstructor);
-                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(defaultConstructor);
+                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(
+                        defaultConstructor);
                     ConstructorInformation constructorInformation = new ConstructorInformation();
                     constructorInformation
                         .setConstructor(defaultConstructor)
@@ -97,7 +104,8 @@ public class ConstructorDeterminant {
         for (Parameter parameter : parameters) {
             Class<?> type = parameter.getType();
             if (type.isPrimitive()) {
-                throw new InvalidConstructorParameterTypeException("The type of the constructor parameter must be an interface.");
+                throw new InvalidConstructorParameterTypeException(
+                    "The type of the constructor parameter must be an interface.");
             }
         }
     }

@@ -1,7 +1,10 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 /**
- * Ошибка говорит о том, что в ходе выполнения програмы произошла ошбка и не удалось создать bean.
+ * Ошибка говорит о том, что не удалось создать bean.
+ *
+ * @author Ilya Sheverov
+ * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#getProvider'(Class)'
  */
 public class FailedToCreateBeanException extends RuntimeException {
 
@@ -21,7 +24,8 @@ public class FailedToCreateBeanException extends RuntimeException {
         super(cause);
     }
 
-    protected FailedToCreateBeanException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected FailedToCreateBeanException(String message, Throwable cause,
+        boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

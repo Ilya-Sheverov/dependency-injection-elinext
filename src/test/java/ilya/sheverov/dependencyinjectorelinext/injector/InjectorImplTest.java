@@ -1,22 +1,23 @@
 package ilya.sheverov.dependencyinjectorelinext.injector;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
 import ilya.sheverov.dependencyinjectorelinext.exception.BindingNotFoundException;
 import ilya.sheverov.dependencyinjectorelinext.exception.CyclicDependencyException;
 import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindingException;
-import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
-import org.junit.jupiter.api.Disabled;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.*;
-import java.util.concurrent.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 interface BeanOne {
 
@@ -33,6 +34,7 @@ interface BeanTwo {
 }
 
 interface BeanThree {
+
 }
 
 interface BeanFour {
@@ -46,9 +48,11 @@ interface BeanFour {
 }
 
 interface CyclicBeanOne {
+
 }
 
 interface CyclicBeanTwo {
+
 }
 
 class BeanOneImpl implements BeanOne {
@@ -98,6 +102,7 @@ class BeanTwoImpl implements BeanTwo {
 }
 
 class BeanThreeImpl implements BeanThree {
+
     public BeanThreeImpl() {
     }
 }
@@ -254,7 +259,8 @@ class InjectorImplTest {
         InjectorImpl injector = new InjectorImpl();
         injector.bindSingleton(CyclicBeanOne.class, CyclicBeanOneImpl.class);
         injector.bindSingleton(CyclicBeanTwo.class, CyclicBeanTwoImpl.class);
-        assertThrows(CyclicDependencyException.class, () -> injector.getProvider(CyclicBeanOne.class)
+        assertThrows(CyclicDependencyException.class,
+            () -> injector.getProvider(CyclicBeanOne.class)
         );
 
 
@@ -271,9 +277,9 @@ class InjectorImplTest {
 
 
     /**
-     * В тесте проверяется, что объект, который должен создаться один раз, не создаться больше более одного.
-     * Для этого, каждый поток сохраняет в синхронизированный {@code Set<Object> objects} полученный инстанс. Если
-     * дупликата не произошло, то размер objects будет равен 1.
+     * В тесте проверяется, что объект, который должен создаться один раз, не создаться больше более
+     * одного. Для этого, каждый поток сохраняет в синхронизированный {@code Set<Object> objects}
+     * полученный инстанс. Если дупликата не произошло, то размер objects будет равен 1.
      */
     @Test
     void testConcurrent() throws InterruptedException {

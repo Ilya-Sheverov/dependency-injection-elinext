@@ -3,7 +3,8 @@ package ilya.sheverov.dependencyinjectorelinext.bean.constructor;
 import java.lang.reflect.Constructor;
 
 /**
- * Простой DTO. Используется в классе {@link ConstructorDeterminant} для предоставления информации о конструкторе.
+ * Простой DTO. Используется в классе {@link ConstructorDeterminant} для предоставления информации о
+ * конструкторе.
  *
  * @author Ilya Sheverov
  * @see ConstructorDeterminant#getConstructorForInjection(Class)
@@ -27,7 +28,7 @@ public class ConstructorInformation {
         return parametersTypes;
     }
 
-    public ConstructorInformation setParametersTypes(Class<?>[] parametersTypes) {
+    ConstructorInformation setParametersTypes(Class<?>[] parametersTypes) {
         this.parametersTypes = parametersTypes;
         return this;
     }

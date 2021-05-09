@@ -1,5 +1,8 @@
 package ilya.sheverov.dependencyinjectorelinext.bean.сonstructor;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import ilya.sheverov.dependencyinjectorelinext.annotation.Inject;
 import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
 import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorInformation;
@@ -7,9 +10,6 @@ import ilya.sheverov.dependencyinjectorelinext.exception.ConstructorNotFoundExce
 import ilya.sheverov.dependencyinjectorelinext.exception.InvalidConstructorParameterTypeException;
 import ilya.sheverov.dependencyinjectorelinext.exception.TooManyConstructorsException;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DefaultConstructor {
 
@@ -67,7 +67,8 @@ class ConstructorDeterminantTest {
 
     @Test
     void testDetermineDefaultConstructor() {
-        ConstructorInformation constructorInformation = constructorDeterminant.getConstructorForInjection(DefaultConstructor.class);
+        ConstructorInformation constructorInformation = constructorDeterminant
+            .getConstructorForInjection(DefaultConstructor.class);
 
         assertNotNull(constructorInformation);
         assertNotNull(constructorInformation.getConstructor());
@@ -76,7 +77,8 @@ class ConstructorDeterminantTest {
 
     @Test
     void testDetermineAnnotatedConstructor() {
-        ConstructorInformation constructorInformation = constructorDeterminant.getConstructorForInjection(InjectAnnotatedConstructor.class);
+        ConstructorInformation constructorInformation = constructorDeterminant
+            .getConstructorForInjection(InjectAnnotatedConstructor.class);
 
         assertNotNull(constructorInformation);
         assertNotNull(constructorInformation.getConstructor());
@@ -86,18 +88,21 @@ class ConstructorDeterminantTest {
     @Test
     void testTooManyConstructors() {
         assertThrows(TooManyConstructorsException.class,
-            () -> constructorDeterminant.getConstructorForInjection(TooManyInjectAnnotations.class));
+            () -> constructorDeterminant
+                .getConstructorForInjection(TooManyInjectAnnotations.class));
     }
 
     @Test
     void testConstructorNotFound() {
-        assertThrows(ConstructorNotFoundException.class, () -> constructorDeterminant.getConstructorForInjection(WithoutPublicConstructors.class));
+        assertThrows(ConstructorNotFoundException.class, () -> constructorDeterminant
+            .getConstructorForInjection(WithoutPublicConstructors.class));
     }
 
     @Test
     void testPrimitiveTypeConstructorParameter() {
         assertThrows(InvalidConstructorParameterTypeException.class,
-            () -> constructorDeterminant.getConstructorForInjection(PrimitiveTypeConstructorParameter.class));
+            () -> constructorDeterminant
+                .getConstructorForInjection(PrimitiveTypeConstructorParameter.class));
     }
 
 }

@@ -1,7 +1,10 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 /**
- * Ошибка говрит о том, что тип параметра кострутора не соответсвует требованиям.
+ * Ошибка говрит о том, что тип параметра коструктора не соответсвует требованиям.
+ *
+ * @author Ilya Sheverov
+ * @see ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant#getConstructorForInjection(Class)
  */
 public class InvalidConstructorParameterTypeException extends RuntimeException {
 
@@ -21,7 +24,8 @@ public class InvalidConstructorParameterTypeException extends RuntimeException {
         super(cause);
     }
 
-    protected InvalidConstructorParameterTypeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected InvalidConstructorParameterTypeException(String message, Throwable cause,
+        boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

@@ -1,10 +1,14 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 
+import ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl;
+
 /**
- * Ошибка может появится при вызове метода checkBindings() класса
- * {@link BindingBeansContext}. Она говрит о том, что среди
- * добавленых биндингов встречаются циклические зависимости.
+ * Ошибка говрит о том, что среди добавленых биндингов встречаются циклические зависимости.
+ *
+ * @author Ilya Sheverov
+ * @see InjectorImpl#checkBindings()
+ * @see InjectorImpl#getProvider(Class)
  */
 public class CyclicDependencyException extends RuntimeException {
 
@@ -24,7 +28,8 @@ public class CyclicDependencyException extends RuntimeException {
         super(cause);
     }
 
-    protected CyclicDependencyException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected CyclicDependencyException(String message, Throwable cause, boolean enableSuppression,
+        boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

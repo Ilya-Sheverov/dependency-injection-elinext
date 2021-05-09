@@ -1,7 +1,10 @@
 package ilya.sheverov.dependencyinjectorelinext.exception;
 
 /**
- * Ошибка говорит о том, что ужу одна имплементация интерфейса при байдинге была добавлена.
+ * Ошибка говорит о том, что уже одна имплементация интерфейса при байдинге была добавлена.
+ *
+ * @author Ilya Sheverov
+ * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#bind(Class, Class, boolean)
  */
 public class MoreThanOneImplementationException extends RuntimeException {
 
@@ -21,7 +24,8 @@ public class MoreThanOneImplementationException extends RuntimeException {
         super(cause);
     }
 
-    protected MoreThanOneImplementationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected MoreThanOneImplementationException(String message, Throwable cause,
+        boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }
