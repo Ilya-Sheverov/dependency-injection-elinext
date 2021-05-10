@@ -66,12 +66,10 @@ public class ConstructorDeterminant {
                     return constructorInformation;
                 } else if (defaultConstructor != null) {
                     validateConstructorParameters(defaultConstructor);
-                    Class<?>[] constructorParametersTypes = getConstructorParametersTypes(
-                        defaultConstructor);
                     ConstructorInformation constructorInformation = new ConstructorInformation();
                     constructorInformation
                         .setConstructor(defaultConstructor)
-                        .setParametersTypes(constructorParametersTypes);
+                        .setParametersTypes(new Class[0]);
                     return constructorInformation;
                 } else {
                     throw new ConstructorNotFoundException("No matching constructor found.");

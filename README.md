@@ -2,7 +2,7 @@
 
 Тестовое задание, которое заключается в написании простейшего Dependency Injection-контейнера.
 
-## Table of contents
+## Table of Contents
 
 * [description](README.md#description)
 * [technologies](README.md#technologies)
