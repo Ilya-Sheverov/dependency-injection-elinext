@@ -106,6 +106,15 @@ public class InjectorImpl implements Injector {
         }
     }
 
+    /**
+     * Возвращает реализацию интерфейса {@code Provider} для типа, который определяется объектом
+     * класса {@code Class}, переданного в параметре.
+     *
+     * @param type объект класса {@code Class}, для которого надо получить {@code Provider}.
+     * @param <T>  тип объекта, который определяется классом {@code type}.
+     * @return объект реализующий интерфейс {@code Provider}, для типа {@code T}, если для объекта
+     * {@code type} существует биндинг, если такого нет, то возвращает null.
+     */
     @Override
     public <T> Provider<T> getProvider(Class<T> type) {
         if (type.isInterface()) {
@@ -121,7 +130,7 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    synchronized public <T> void bind(Class<T> intf, Class<? extends T> impl, boolean isSingleton) {
+    private <T> void bind(Class<T> intf, Class<? extends T> impl, boolean isSingleton) {
         if (intf.isInterface()) {
             if (!Modifier.isAbstract(impl.getModifiers())) {
                 if (!beansDefinitionStorage.containsKey(intf)) {
@@ -144,13 +153,31 @@ public class InjectorImpl implements Injector {
         }
     }
 
+    /**
+     * Связывает интерфейс и его реализацию, сохраняет в контекст всех биндингов этого объекта,
+     * помечая, что объект, переданного класса, должен создаваться каждый раз новый.
+     *
+     * @param intf объект класса {@code Class}, который определяет тип передаваемого интерфейса.
+     * @param impl объект класса {@code Class}, который определяет тип передаваемого класса,
+     *             реализующего интерфейс {@code intf}.
+     * @param <T>  тип передаваемого интерфейса.
+     */
     @Override
-    public <T> void bind(Class<T> intf, Class<? extends T> impl) {
+    synchronized public <T> void bind(Class<T> intf, Class<? extends T> impl) {
         bind(intf, impl, false);
     }
 
+    /**
+     * Связывает интерфейс и его реализацию, сохраняет в контекст всех биндингов этого объекта,
+     * помечая, что объект, переданного класса, должен создаваться один раз.
+     *
+     * @param intf объект класса {@code Class}, который определяет тип передаваемого интерфейса.
+     * @param impl объект класса {@code Class}, который определяет тип передаваемого класса,
+     *             реализующего интерфейс {@code intf}.
+     * @param <T>  тип передаваемого интерфейса.
+     */
     @Override
-    public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
+    synchronized public <T> void bindSingleton(Class<T> intf, Class<? extends T> impl) {
         bind(intf, impl, true);
     }
 
@@ -170,6 +197,14 @@ public class InjectorImpl implements Injector {
         }
     }
 
+    /**
+     * Проверяет, что все биндинги, необходимые для создания бинов, добавлены в контекст этого
+     * объекта и что среди бинов нет циклических зависимостей.
+     *
+     * @see #bind(Class, Class)
+     * @see #bindSingleton(Class, Class)
+     * @see #getProvider(Class)
+     */
     synchronized public void checkBindings() {
         isBeenValidated = true;
         checkThatAllBindingsExist();
