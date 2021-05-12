@@ -8,7 +8,6 @@
 * [technologies](README.md#technologies)
 * [quick build](README.md#Quick-Build)
 * [style guide](README.md#style-guide)
-* [assumptions](README.md#assumptions)
 * [todo](README.md#todo)
 
 ## Description
@@ -74,18 +73,9 @@
 за исключением пункта [4.2 Block indentation](https://google.github.io/styleguide/javaguide.html#s4.2-block-indentation).
 Использую **block indentation**= +4 пробела, вместо 2.
 
-## Assumptions
-
-В данной версии моего контейнера были приняты следующие допущения:
-
-1. Проводится проверка на циклические зависимости между бинами (одному объекту надо передать в конструктор второй объект,
-а второму требуется передать в конструктор первый) только при вызове метода  `checkBindings()`  у объекта класса  **InjectorImpl.class**.
-Если не вызвать этот метод и при байдинге будут обнаружены циклические зависимости, будет выбрашена ошибка StackOverflowError. 
-2. Считается, что все типы параметров конструкторов бинов являются интерфейсами, если нет, то выбрасывается исключение InvalidConstructorParameterTypeException.
-
 ## TODO
 
-- [ ] Контейнер должен работать в многопоточной среде. То, как реализовано у меня сейчас, возможно,
+- [X] Контейнер должен работать в многопоточной среде. То, как реализовано у меня сейчас, возможно,
 [не работает](http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html).
 Сделать метод для получения singleton бина потокобезопасным возможно добавив synchronized
 для метода  `synchronized  public <T> T getBean(Class<T> type)` класса BindingBeansContext.class, но это сделает контейнер не производительным.
