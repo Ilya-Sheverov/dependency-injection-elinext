@@ -13,7 +13,8 @@ import java.lang.reflect.Modifier;
  *
  * @author Ilya Sheverov
  * @see #getBeanDefinition(Class, boolean)
- * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#bind(Class, Class, boolean)
+ * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#bind(Class, Class)
+ * @see ilya.sheverov.dependencyinjectorelinext.injector.InjectorImpl#bindSingleton(Class, Class)
  * @since 1.0
  */
 public class BeanDefinitionFactory {
@@ -24,9 +25,9 @@ public class BeanDefinitionFactory {
     /**
      * Возвращает {@link BeanDefinition} на основе переданной в метод информации.
      *
-     * @param aClass      класс, на информации которого создается объект {@link BeanDefinition}.
+     * @param aClass      класс, на информации которого создается объект {@code BeanDefinition}.
      * @param isSingleton является ли бин синглтоном.
-     * @return объект класса {@link BeanDefinition}.
+     * @return объект класса {@code BeanDefinition}.
      */
     public BeanDefinition getBeanDefinition(Class<?> aClass, boolean isSingleton) {
         if (!aClass.isInterface()) {

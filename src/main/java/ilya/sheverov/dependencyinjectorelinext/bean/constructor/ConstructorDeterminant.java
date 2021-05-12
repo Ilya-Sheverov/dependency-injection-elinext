@@ -24,12 +24,31 @@ import java.lang.reflect.Parameter;
  * InvalidConstructorParameterTypeException}.
  *
  * @author Ilya Sheverov
+ * @see ConstructorInformation
  * @see ilya.sheverov.dependencyinjectorelinext.bean.BeanDefinitionFactory#getBeanDefinition(Class,
  * boolean)
  * @since 1.0
  */
 public class ConstructorDeterminant {
 
+    /**
+     * Возвращает объект класса {@code ConstructorInformation} если конструктор был найден, если
+     * нет, то выбрасывается исключение.
+     *
+     * @param aClass объект класса {@code Class}, определяющий тип, для создания объекта которого
+     *               ищется конструктор.
+     * @return объект класса {@code ConstructorInformation}.
+     * @throws IllegalArgumentForBindingException,      если {@code aClass} определяет интерфейс или
+     *                                                  абстрактный класс.
+     * @throws ConstructorNotFoundException,            если нет ни одного публичного конструктора
+     *                                                  или ни один конструктор не соответствует
+     *                                                  требованиям.
+     * @throws TooManyConstructorsException,            если было найдено больше, чем один
+     *                                                  конструктор, помеченный аннотацией {@code
+     *                                                  Inject}.
+     * @throws InvalidConstructorParameterTypeException если параметры конструктора являются
+     *                                                  примитивными типами.
+     */
     public ConstructorInformation getConstructorForInjection(Class<?> aClass) {
         if (!aClass.isInterface()) {
             if (!Modifier.isAbstract(aClass.getModifiers())) {
