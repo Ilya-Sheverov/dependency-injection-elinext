@@ -12,6 +12,7 @@ import ilya.sheverov.dependencyinjectorelinext.exception.IllegalArgumentForBindi
 import ilya.sheverov.dependencyinjectorelinext.provider.Provider;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -73,6 +74,24 @@ class BeanOneImpl implements BeanOne {
     public BeanThree getBeanThree() {
         return beanThree;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanOneImpl)) {
+            return false;
+        }
+        BeanOneImpl beanOne = (BeanOneImpl) o;
+        return beanTwo.equals(beanOne.beanTwo) &&
+            beanThree.equals(beanOne.beanThree);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanTwo, beanThree);
+    }
 }
 
 abstract class BeanOneAbstract implements BeanOne {
@@ -84,6 +103,24 @@ abstract class BeanOneAbstract implements BeanOne {
     public BeanOneAbstract(BeanTwo beanTwo, BeanThree beanThree) {
         this.beanTwo = beanTwo;
         this.beanThree = beanThree;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanOneAbstract)) {
+            return false;
+        }
+        BeanOneAbstract that = (BeanOneAbstract) o;
+        return beanTwo.equals(that.beanTwo) &&
+            beanThree.equals(that.beanThree);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanTwo, beanThree);
     }
 }
 
@@ -98,6 +135,23 @@ class BeanTwoImpl implements BeanTwo {
 
     public BeanThree getBeanThree() {
         return beanThree;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanTwoImpl)) {
+            return false;
+        }
+        BeanTwoImpl beanTwo = (BeanTwoImpl) o;
+        return Objects.equals(beanThree, beanTwo.beanThree);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanThree);
     }
 }
 
@@ -134,6 +188,25 @@ class BeanFourImpl implements BeanFour {
     public BeanThreeImpl getBeanThree() {
         return beanThree;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanFourImpl)) {
+            return false;
+        }
+        BeanFourImpl beanFour = (BeanFourImpl) o;
+        return beanOne.equals(beanFour.beanOne) &&
+            beanTwo.equals(beanFour.beanTwo) &&
+            beanThree.equals(beanFour.beanThree);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beanOne, beanTwo, beanThree);
+    }
 }
 
 class CyclicBeanOneImpl implements CyclicBeanOne {
@@ -144,6 +217,8 @@ class CyclicBeanOneImpl implements CyclicBeanOne {
     public CyclicBeanOneImpl(CyclicBeanTwo cyclicBeanTwo) {
         this.cyclicBeanTwo = cyclicBeanTwo;
     }
+
+
 }
 
 class CyclicBeanTwoImpl implements CyclicBeanTwo {
