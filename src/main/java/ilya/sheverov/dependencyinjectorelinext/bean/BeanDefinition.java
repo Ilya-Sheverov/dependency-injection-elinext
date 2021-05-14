@@ -2,6 +2,8 @@ package ilya.sheverov.dependencyinjectorelinext.bean;
 
 import ilya.sheverov.dependencyinjectorelinext.bean.constructor.ConstructorDeterminant;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Объект класса BeanDefinition хранит необходимую информацию для последующего создания бина.
@@ -78,5 +80,27 @@ public class BeanDefinition {
 
     public void setConstructorParametersTypes(Class<?>[] constructorParametersTypes) {
         this.constructorParametersTypes = constructorParametersTypes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BeanDefinition)) {
+            return false;
+        }
+        BeanDefinition that = (BeanDefinition) o;
+        return isSingleton == that.isSingleton &&
+            typeOfBean.equals(that.typeOfBean) &&
+            constructor.equals(that.constructor) &&
+            Arrays.equals(constructorParametersTypes, that.constructorParametersTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(isSingleton, typeOfBean, constructor);
+        result = 31 * result + Arrays.hashCode(constructorParametersTypes);
+        return result;
     }
 }
