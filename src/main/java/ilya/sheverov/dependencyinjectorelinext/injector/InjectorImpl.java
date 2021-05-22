@@ -35,9 +35,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class InjectorImpl implements Injector {
 
     private final BeanDefinitionFactory beanDefinitionFactory = new BeanDefinitionFactory();
-    private final Map<Class<?>, BeanDefinition> beansDefinitionStorage = new HashMap<>();
-    private final Map<Class<?>, Class<?>> interfaceByAClass = new HashMap<>();
-    private final Map<Class<?>, Object> singletonContainer = new ConcurrentHashMap<>();
+    private final Map<String, BeanDefinition> beansDefinitionStorage = new HashMap<>();
+    private final Map<String, Class<?>> interfaceByAClass = new HashMap<>();
+    private final Map<String, Object> singletonContainer = new ConcurrentHashMap<>();
     private volatile boolean isBeenValidated;
 
     private Lock lock = new ReentrantLock();
@@ -66,16 +66,16 @@ public class InjectorImpl implements Injector {
     private Object getSingletonBean(BeanDefinition beanDefinition, Class<?> intf)
         throws InvocationTargetException,
         InstantiationException, IllegalAccessException {
-        if (singletonContainer.containsKey(intf)) {
-            return singletonContainer.get(intf);
+        if (singletonContainer.containsKey(intf.getCanonicalName())) {
+            return singletonContainer.get(intf.getCanonicalName());
         } else {
             lock.lock();
             try {
-                if (singletonContainer.containsKey(intf)) {
-                    return singletonContainer.get(intf);
+                if (singletonContainer.containsKey(intf.getCanonicalName())) {
+                    return singletonContainer.get(intf.getCanonicalName());
                 }
                 Object bean = getPrototypeBean(beanDefinition);
-                singletonContainer.putIfAbsent(intf, bean);
+                singletonContainer.putIfAbsent(intf.getCanonicalName(), bean);
                 return bean;
             } finally {
                 lock.unlock();
@@ -137,8 +137,8 @@ public class InjectorImpl implements Injector {
                 if (!beansDefinitionStorage.containsKey(intf)) {
                     BeanDefinition beanDefinition = beanDefinitionFactory
                         .getBeanDefinition(impl, isSingleton);
-                    beansDefinitionStorage.put(intf, beanDefinition);
-                    interfaceByAClass.put(impl, intf);
+                    beansDefinitionStorage.put(intf.getCanonicalName(), beanDefinition);
+                    interfaceByAClass.put(impl.getCanonicalName(), intf);
                     if (isBeenValidated) {
                         isBeenValidated = false;
                     }
@@ -184,17 +184,17 @@ public class InjectorImpl implements Injector {
 
     private boolean hasBinding(Class<?> type) {
         if (type.isInterface()) {
-            return beansDefinitionStorage.containsKey(type);
+            return beansDefinitionStorage.containsKey(type.getCanonicalName());
         } else {
-            return interfaceByAClass.containsKey(type);
+            return interfaceByAClass.containsKey(type.getCanonicalName());
         }
     }
 
     private BeanDefinition getBeanDefinitionByType(Class<?> type) {
         if (type.isInterface()) {
-            return beansDefinitionStorage.get(type);
+            return beansDefinitionStorage.get(type.getCanonicalName());
         } else {
-            return beansDefinitionStorage.get(interfaceByAClass.get(type));
+            return beansDefinitionStorage.get(interfaceByAClass.get(type.getCanonicalName()).getCanonicalName());
         }
     }
 
@@ -219,7 +219,7 @@ public class InjectorImpl implements Injector {
                 Class<?>[] constructorParametersTypes = beanDefinition
                     .getConstructorParametersTypes();
                 for (Class<?> constructorParameterType : constructorParametersTypes) {
-                    if (!beansDefinitionStorage.containsKey(constructorParameterType)) {
+                    if (!beansDefinitionStorage.containsKey(constructorParameterType.getCanonicalName())) {
                         throw new BindingNotFoundException(
                             "No building found for the type " + constructorParameterType);
                     }
@@ -228,10 +228,10 @@ public class InjectorImpl implements Injector {
         }
     }
 
-    private void findCyclicDependencies(Class<?> type, BeanDefinition beanDefinition) {
+    private void findCyclicDependencies(String type, BeanDefinition beanDefinition) {
         Class<?>[] constructorParametersTypes = beanDefinition.getConstructorParametersTypes();
         for (Class<?> constructorParameterType : constructorParametersTypes) {
-            if (constructorParameterType.equals(type)) {
+            if (constructorParameterType.getCanonicalName().equals(type)) {
                 throw new CyclicDependencyException("A cyclic dependence was found for the type:");
             } else {
                 BeanDefinition nextBeanDefinition = getBeanDefinitionByType(
@@ -245,19 +245,19 @@ public class InjectorImpl implements Injector {
         beansDefinitionStorage.forEach(this::findCyclicDependencies);
     }
 
-    private Map<Class<?>, BeanDefinition> getAllTheNecessaryDefinitionsForTheType(Class<?> type,
-        Map<Class<?>, BeanDefinition> beanDefinitions) {
+    private Map<String, BeanDefinition> getAllTheNecessaryDefinitionsForTheType(Class<?> type,
+        Map<String, BeanDefinition> beanDefinitions) {
         if (!hasBinding(type)) {
             throw new BindingNotFoundException("No building found for the type " + type);
         }
         if (!type.isInterface()) {
-            type = interfaceByAClass.get(type);
+            type = interfaceByAClass.get(type.getCanonicalName());
         }
         BeanDefinition beanDefinition = getBeanDefinitionByType(type);
-        if (beanDefinitions.containsKey(type)) {
+        if (beanDefinitions.containsKey(type.getCanonicalName())) {
             return beanDefinitions;
         }
-        beanDefinitions.put(type, beanDefinition);
+        beanDefinitions.put(type.getCanonicalName(), beanDefinition);
         for (Class<?> constructorParameterType : beanDefinition.getConstructorParametersTypes()) {
             getAllTheNecessaryDefinitionsForTheType(constructorParameterType, beanDefinitions);
         }
@@ -265,7 +265,7 @@ public class InjectorImpl implements Injector {
     }
 
     private void checkTypeOnCyclicDependencies(Class<?> type) {
-        Map<Class<?>, BeanDefinition> allTheNecessaryDefinitionsForTheType
+        Map<String, BeanDefinition> allTheNecessaryDefinitionsForTheType
             = getAllTheNecessaryDefinitionsForTheType(type, new HashMap<>());
         allTheNecessaryDefinitionsForTheType
             .forEach(this::findCyclicDependencies);
